@@ -1,0 +1,5 @@
+{
+  "name": "PrimeKG Precision Medicine Explorer",
+  "description": "A holistic precision medicine platform integrating the PrimeKG knowledge graph with Gemini 3.0 AI for advanced disease exploration, drug repurposing, and mechanism analysis.",
+  "requestFramePermissions": []
+}

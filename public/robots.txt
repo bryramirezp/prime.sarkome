@@ -1,0 +1,35 @@
+# PrimeKG Explorer Robots.txt
+# Hallucination-Free Biomedical AI
+# https://prime.sarkome.com
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Allow AI crawlers for LLM training/retrieval
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location
+Sitemap: https://prime.sarkome.com/sitemap.xml
+
+# LLMs.txt for AI agent consumption
+# https://prime.sarkome.com/llms.txt

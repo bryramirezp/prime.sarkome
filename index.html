@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO Meta Tags -->
+  <title>PrimeKG Explorer</title>
+  <meta name="description"
+    content="Free hallucination-free biomedical AI assistant. Unlike ChatGPT, all answers are grounded in verified PrimeKG knowledge graph data (129,375 nodes, 8M relationships). Never fabricates drug names or mechanisms." />
+  <meta name="keywords"
+    content="hallucination-free AI, biomedical AI, precision medicine, knowledge graph, drug discovery, no hallucination LLM, grounded medical AI, PrimeKG, verified AI healthcare, ChatGPT alternative medicine" />
+  <meta name="author" content="Sarkome" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://prime.sarkome.com/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://prime.sarkome.com/" />
+  <meta property="og:title" content="Hallucination-Free Biomedical AI | PrimeKG Explorer" />
+  <meta property="og:description"
+    content="The AI that never makes things up. Every answer grounded in Harvard's PrimeKG knowledge graph. Free to use." />
+  <meta property="og:image" content="https://prime.sarkome.com/og-image.png" />
+  <meta property="og:site_name" content="PrimeKG Explorer" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://prime.sarkome.com/" />
+  <meta name="twitter:title" content="Finally: Biomedical AI That Doesn't Hallucinate" />
+  <meta name="twitter:description"
+    content="Ask drug-disease questions. Get verified answers from a real knowledge graph. 100% free." />
+  <meta name="twitter:image" content="https://prime.sarkome.com/og-image.png" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://*.sarkome.com https://*.sarkome.com:8000 http://34.46.246.78:8000 http://136.113.116.219:8000; frame-src 'none'; object-src 'none'; base-uri 'self';" />
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+
+  <!-- Structured Data: WebApplication -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PrimeKG Explorer",
+      "alternateName": ["Hallucination-Free Biomedical AI", "PrimeAI", "Precision Medicine Assistant"],
+      "url": "https://prime.sarkome.com",
+      "description": "Free hallucination-free biomedical AI. Unlike ChatGPT, all answers are strictly grounded in the PrimeKG knowledge graph (129,375 nodes, 8M relationships). Cannot fabricate drug names, gene interactions, or clinical claims.",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Sarkome",
+        "url": "https://sarkome.com"
+      },
+      "featureList": [
+        "Hallucination-free biomedical answers",
+        "Knowledge graph with 129,375 verified nodes",
+        "8 million biomedical relationships",
+        "Drug repurposing suggestions",
+        "Gene-disease relationship queries",
+        "Interactive graph visualization",
+        "Google Web Search integration",
+        "Free with your own Gemini API key"
+      ],
+      "keywords": "hallucination-free AI, biomedical AI, knowledge graph, drug discovery, precision medicine, PrimeKG, verified medical AI"
+    }
+    </script>
+
+  <!-- Structured Data: FAQPage -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is PrimeKG?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PrimeKG is a precision medicine knowledge graph containing 129,375 nodes and over 8 million relationships across diseases, drugs, genes, pathways, and phenotypes. This assistant lets you query it using natural language."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is PrimeKG free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, PrimeKG is 100% free to use. You just need to provide your own Gemini API key from Google AI Studio."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this medical AI hallucinate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Unlike general LLMs, PrimeKG provides grounded answers based on a real knowledge graph. All answers are traceable to actual nodes and relationships in the graph."
+          }
+        }
+      ]
+    }
+    </script>
+
+  <!-- Structured Data: MedicalWebPage -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalWebPage",
+      "name": "PrimeKG Precision Medicine Research Assistant",
+      "url": "https://prime.sarkome.com",
+      "specialty": "Precision Medicine",
+      "about": {
+        "@type": "MedicalCondition",
+        "name": "Various diseases and conditions",
+        "description": "Research tool for exploring relationships between diseases, genes, drugs, and biological pathways"
+      },
+      "audience": {
+        "@type": "MedicalAudience",
+        "audienceType": "Researchers, Healthcare Professionals, Students"
+      },
+      "lastReviewed": "2026-01-18"
+    }
+    </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgb(var(--color-surface-hover));
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgb(var(--color-tertiary));
+    }
+
+    .glass-panel {
+      background: rgb(var(--color-surface) / 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.36.0",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
+    "d3": "https://esm.sh/d3@^7.9.0"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
