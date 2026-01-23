@@ -274,6 +274,17 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
     executeChat(query);
   };
 
+  const handleNodeClick = (node: any) => {
+    // Populate input with context about the selected node
+    const contextPrefix = `Tell me more about ${node.name} (${node.type}) and its `;
+    setInput(contextPrefix);
+    
+    // Focus the textarea
+    if (textareaRef.current) {
+        textareaRef.current.focus();
+    }
+  };
+
   // Check for existing API key on mount
   useEffect(() => {
     const key = getStoredApiKey();
@@ -784,25 +795,25 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               </div>
 
               {/* How it works - 3 steps */}
-              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                <div className={`p-4 rounded-xl ${darkMode ? 'bg-zinc-800/50' : 'bg-white shadow-sm border border-slate-200'}`}>
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto text-primary`}>
+                <div className={`p-4 rounded-xl bg-surface border border-border`}>
                   <div className="text-2xl mb-2">💬</div>
                   <div className="text-sm font-medium">1. Ask in English</div>
-                  <div className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <div className={`text-xs mt-1 text-tertiary`}>
                     "What drugs target TP53?"
                   </div>
                 </div>
                 <div className={`p-4 rounded-xl ${darkMode ? 'bg-zinc-800/50' : 'bg-white shadow-sm border border-slate-200'}`}>
                   <div className="text-2xl mb-2">🔍</div>
                   <div className="text-sm font-medium">2. We Query PrimeKG</div>
-                  <div className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <div className={`text-xs mt-1 text-tertiary`}>
                     Real graph traversal, not guessing
                   </div>
                 </div>
                 <div className={`p-4 rounded-xl ${darkMode ? 'bg-zinc-800/50' : 'bg-white shadow-sm border border-slate-200'}`}>
                   <div className="text-2xl mb-2">📊</div>
                   <div className="text-sm font-medium">3. Get Verified Answers</div>
-                  <div className={`text-xs mt-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <div className={`text-xs mt-1 text-tertiary`}>
                     With source traces & visualizations
                   </div>
                 </div>
@@ -815,10 +826,10 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                   : 'border-indigo-200 bg-gradient-to-b from-indigo-50 to-purple-50 shadow-lg'
                   }`}>
                   <div className="flex items-center justify-center gap-3 mb-4">
-                    <span className={`material-symbols-outlined text-2xl ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>rocket_launch</span>
-                    <span className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-slate-900'}`}>Ready to Start?</span>
+                    <span className={`material-symbols-outlined text-2xl text-indigo-500`}>rocket_launch</span>
+                    <span className={`font-semibold text-lg text-primary`}>Ready to Start?</span>
                   </div>
-                  <p className={`text-sm mb-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <p className={`text-sm mb-4 text-secondary`}>
                     100% free. Just add your Gemini API key (also free).
                   </p>
                   <button
@@ -830,7 +841,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                   >
                     Add API Key & Start Exploring
                   </button>
-                  <p className={`mt-3 text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <p className={`mt-3 text-xs text-tertiary`}>
                     Get your free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" className="underline hover:text-primary">Google AI Studio</a> • Stored locally
                   </p>
                 </div>
@@ -839,7 +850,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               {/* If has API key, show suggested questions */}
               {hasApiKey && (
                 <div className="space-y-6 mt-4">
-                  <div className={`text-center ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <div className={`text-center text-secondary`}>
                     <p className="text-sm">
                       <span className="text-emerald-500 mr-2">✓</span>
                       API key configured. Ready to explore!
@@ -907,17 +918,18 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                         {msg.relatedData && msg.relatedData.nodes && msg.relatedData.nodes.length > 0 ? (
                           <div className="mt-4">
                             <React.Suspense fallback={
-                              <div className="w-full h-[400px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse flex items-center justify-center border border-border/50">
+                              <div className="w-full h-[400px] bg-white/50 dark:bg-black/20 rounded-xl animate-pulse flex items-center justify-center border border-border/50">
                                 <div className="flex flex-col items-center gap-2 text-tertiary">
                                   <span className="material-symbols-outlined text-3xl animate-spin">cyclone</span>
                                   <span className="text-xs font-medium">Loading visualization...</span>
                                 </div>
                               </div>
                             }>
-                              <GraphVisualization
-                                data={msg.relatedData}
-                                darkMode={darkMode}
-                              />
+                                <GraphVisualization
+                                  data={msg.relatedData}
+                                  darkMode={darkMode}
+                                  onNodeClick={handleNodeClick}
+                                />
                             </React.Suspense>
                             <div className="mt-2 flex items-center justify-between text-[10px] text-tertiary">
                               <span>Graph rendered with {msg.relatedData.nodes.length} nodes and {msg.relatedData.edges.length} edges</span>
@@ -926,7 +938,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                               )}
                             </div>
                           </div>
-                        ) : msg.relatedData ? (
+                        ) : (msg.relatedData && !msg.relatedData.type) ? (
                           <div className="mt-4 p-2 bg-amber-500/10 border border-amber-500/20 rounded text-xs text-amber-600 dark:text-amber-400">
                             ⚠️ Graph data present but empty nodes/edges.
                             <details>
@@ -1034,7 +1046,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
         <div className="max-w-3xl mx-auto w-full pointer-events-auto">
           <div
             onClick={() => textareaRef.current?.focus()}
-            className="relative bg-white dark:bg-zinc-900 border border-border rounded-2xl transition-all duration-200 shadow-sm cursor-text"
+            className="relative bg-[rgb(var(--color-bg-main))] border border-border rounded-2xl transition-all duration-200 shadow-sm cursor-text"
           >
             <textarea
               ref={textareaRef}

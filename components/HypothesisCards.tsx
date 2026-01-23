@@ -85,7 +85,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 className={`
           group border rounded-xl p-4 transition-all duration-200
           ${config.borderColor}
-          ${darkMode ? 'bg-zinc-900/50 hover:bg-zinc-900/70' : 'bg-white hover:shadow-md'}
+          bg-surface/50 hover:bg-surface/70
         `}
             >
                 <div className="flex items-start justify-between gap-3">
@@ -113,7 +113,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                             )}
                         </div>
 
-                        <div className={`text-sm space-y-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <div className={`text-sm space-y-1 text-tertiary`}>
                             {item.original_indication && (
                                 <div className="flex items-start gap-2">
                                     <span className="text-xs opacity-70 flex-shrink-0">Currently treats:</span>
@@ -151,7 +151,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 {isExpanded && (
                     <div className={`
             mt-3 pt-3 border-t text-xs space-y-2
-            ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}
+            border-border text-tertiary
           `}>
                         <p className="italic">
                             This drug targets the same molecular pathway as the disease, suggesting potential therapeutic benefit.
@@ -181,7 +181,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 className={`
           group border rounded-xl p-4 transition-all duration-200
           ${config.borderColor}
-          ${darkMode ? 'bg-zinc-900/50 hover:bg-zinc-900/70' : 'bg-white hover:shadow-md'}
+          bg-surface/50 hover:bg-surface/70
         `}
             >
                 <div className="flex items-start justify-between gap-3">
@@ -199,14 +199,14 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                             {item.target_type && (
                                 <span className={`
                   text-xs px-2 py-0.5 rounded-full font-medium
-                  ${darkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'}
+                  bg-surface-hover text-secondary
                 `}>
                                     {item.target_type}
                                 </span>
                             )}
                         </div>
 
-                        <div className={`text-sm space-y-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <div className={`text-sm space-y-1 text-tertiary`}>
                             {item.relation_to_disease && (
                                 <div className="flex items-start gap-2">
                                     <span className="text-xs opacity-70 flex-shrink-0">Relation:</span>
@@ -242,7 +242,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 {isExpanded && (
                     <div className={`
             mt-3 pt-3 border-t text-xs space-y-2
-            ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}
+            border-border text-tertiary
           `}>
                         <p className="italic">
                             {item.existing_drugs === 0
@@ -275,7 +275,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 className={`
           group border rounded-xl p-4 transition-all duration-200
           ${config.borderColor}
-          ${darkMode ? 'bg-zinc-900/50 hover:bg-zinc-900/70' : 'bg-white hover:shadow-md'}
+          bg-surface/50 hover:bg-surface/70
         `}
             >
                 <div className="flex items-start justify-between gap-3">
@@ -290,7 +290,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                             {item.partner_drug}
                         </button>
 
-                        <div className={`text-sm space-y-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <div className={`text-sm space-y-1 text-tertiary`}>
                             {item.mechanism && (
                                 <div className="flex items-start gap-2">
                                     <span className="text-xs opacity-70 flex-shrink-0">Mechanism:</span>
@@ -328,7 +328,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
                 {isExpanded && (
                     <div className={`
             mt-3 pt-3 border-t text-xs space-y-2
-            ${darkMode ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-600'}
+            border-border text-tertiary
           `}>
                         <p className="italic">
                             Combining drugs with complementary mechanisms may enhance therapeutic efficacy.
@@ -354,10 +354,10 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">{config.icon}</span>
-                <h3 className={`font-semibold text-sm ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                <h3 className={`font-semibold text-sm text-primary`}>
                     {config.title}
                 </h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${config.bgColor} ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${config.bgColor} text-secondary`}>
                     {data.length} found
                 </span>
             </div>

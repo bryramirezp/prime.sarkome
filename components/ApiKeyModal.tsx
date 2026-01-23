@@ -77,19 +77,19 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
         onClick={onClose}
     >
       <div 
-        className={`rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden animate-scale-in ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}
+        className={`rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden animate-scale-in bg-surface border-border`}
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white">
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-5 text-white">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
               <i className="fas fa-key text-xl"></i>
             </div>
             <div>
               <h2 className="text-xl font-bold">Bring Your Own LLM</h2>
-              <p className="text-primary-100 text-sm">Set your Google Gemini API key</p>
+              <p className="text-indigo-100 text-sm">Set your Google Gemini API key</p>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
 
           {/* API Key Input */}
           <div>
-            <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+            <label className={`block text-sm font-semibold mb-2 text-secondary`}>
               Google Gemini API Key
             </label>
             <div className="relative">
@@ -144,24 +144,24 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
-                className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono ${darkMode ? 'bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-400' : 'border-slate-300'}`}
+                className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent text-sm font-mono bg-[rgb(var(--color-input-bg))] border-[rgb(var(--color-input-border))] text-primary placeholder-tertiary`}
               />
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary`}
               >
                 <i className={`fas ${showKey ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
             </div>
-            <p className={`text-xs mt-2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <p className={`text-xs mt-2 text-tertiary`}>
               <i className="fas fa-info-circle mr-1"></i>
               Get your key for free at{' '}
               <a 
                 href="https://aistudio.google.com/app/apikey" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-primary-500 hover:underline"
+                className="text-accent hover:underline"
               >
                 Google AI Studio
               </a>
@@ -177,14 +177,14 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
           )}
 
           {/* Technical Details (collapsible) */}
-          <details className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-            <summary className={`cursor-pointer px-4 py-3 text-sm font-medium flex items-center justify-between ${darkMode ? 'text-slate-300 hover:bg-slate-600' : 'text-slate-600 hover:bg-slate-100'}`}>
+          <details className={`rounded-xl border overflow-hidden bg-[rgb(var(--color-bg-main))] border-border`}>
+            <summary className={`cursor-pointer px-4 py-3 text-sm font-medium flex items-center justify-between text-secondary hover:bg-surface-hover`}>
               <span><i className="fas fa-code mr-2"></i>Technical details</span>
-              <i className={`fas fa-chevron-down ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}></i>
+              <i className={`fas fa-chevron-down text-tertiary`}></i>
             </summary>
-            <div className={`px-4 pb-4 text-xs space-y-2 font-mono ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              <p>• Storage: <code className={`px-1 rounded ${darkMode ? 'bg-slate-600' : 'bg-slate-200'}`}>localStorage['primekg_gemini_api_key']</code></p>
-              <p>• Endpoint: <code className={`px-1 rounded ${darkMode ? 'bg-slate-600' : 'bg-slate-200'}`}>generativelanguage.googleapis.com</code></p>
+            <div className={`px-4 pb-4 text-xs space-y-2 font-mono text-tertiary`}>
+              <p>• Storage: <code className={`px-1 rounded bg-surface`}>localStorage['primekg_gemini_api_key']</code></p>
+              <p>• Endpoint: <code className={`px-1 rounded bg-surface`}>generativelanguage.googleapis.com</code></p>
               <p>• Models: Gemini 3.0 Flash / Pro</p>
               <p>• Code is open source—verify anytime</p>
             </div>
@@ -192,7 +192,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
         </div>
 
         {/* Actions */}
-        <div className={`px-6 py-4 flex items-center justify-between border-t ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+        <div className={`px-6 py-4 flex items-center justify-between border-t bg-[rgb(var(--color-bg-main))] border-border`}>
           <div>
             {hasExistingKey && (
               <button
@@ -207,14 +207,14 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'text-slate-300 hover:bg-slate-600' : 'text-slate-600 hover:bg-slate-200'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors text-secondary hover:bg-surface-hover`}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={!apiKey.trim()}
-              className={`px-5 py-2 text-sm font-medium rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 ${darkMode ? 'bg-accent hover:bg-accent/90 text-white' : 'bg-accent hover:bg-accent/90 text-white'}`}
+              className={`px-5 py-2 text-sm font-medium rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 bg-accent hover:bg-accent-hover text-white`}
             >
               <i className="fas fa-save"></i>
               Save in my browser

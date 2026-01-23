@@ -1,14 +1,18 @@
 import React from 'react';
+import { CitationTooltip } from './CitationTooltip';
+import type { EntityType } from '../types/pubmed';
 
 /**
  * Detects and makes entity mentions clickable in AI responses.
  * Allows users to explore nodes directly from the text.
+ * Now includes literature preview tooltips on hover.
  */
 
 interface EntityMentionProps {
     text: string;
     onExploreNode: (nodeName: string) => void;
     darkMode?: boolean;
+    showLiteratureTooltips?: boolean;
 }
 
 /**
@@ -40,6 +44,26 @@ const EXCLUDE_WORDS = new Set([
 ]);
 
 /**
+ * Determine entity type based on pattern matching
+ */
+const guessEntityType = (entity: string): EntityType => {
+    // All caps likely a gene
+    if (/^[A-Z]{2,6}[0-9]{0,2}$/.test(entity)) {
+        return 'gene';
+    }
+    // Drug suffixes
+    if (/(?:mab|nib|tinib|olol|pril|statin|cillin|mycin|cycline)$/i.test(entity)) {
+        return 'drug';
+    }
+    // Multi-word capitalized likely a disease
+    if (/\s/.test(entity)) {
+        return 'disease';
+    }
+    // Default to gene for single capitalized words
+    return 'gene';
+};
+
+/**
  * Extract potential entities from text
  */
 const extractEntities = (text: string): Set<string> => {
@@ -64,7 +88,8 @@ const extractEntities = (text: string): Set<string> => {
 const EntityMention: React.FC<EntityMentionProps> = ({
     text,
     onExploreNode,
-    darkMode = false
+    darkMode = false,
+    showLiteratureTooltips = true
 }) => {
     const entities = extractEntities(text);
 
@@ -84,7 +109,8 @@ const EntityMention: React.FC<EntityMentionProps> = ({
         <>
             {parts.map((part, index) => {
                 if (entities.has(part)) {
-                    return (
+                    const entityType = guessEntityType(part);
+                    const button = (
                         <button
                             key={index}
                             onClick={(e) => {
@@ -96,10 +122,8 @@ const EntityMention: React.FC<EntityMentionProps> = ({
                 inline-flex items-center gap-0.5 px-1 py-0.5 rounded
                 font-medium transition-all
                 hover:scale-105 active:scale-95
-                ${darkMode
-                                    ? 'text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300'
-                                    : 'text-cyan-600 hover:bg-cyan-100 hover:text-cyan-700'
-                                }
+                hover:scale-105 active:scale-95
+                text-accent hover:bg-accent/10 hover:text-accent-hover
               `}
                             title={`Explore ${part} in the knowledge graph`}
                         >
@@ -109,6 +133,21 @@ const EntityMention: React.FC<EntityMentionProps> = ({
                             </span>
                         </button>
                     );
+
+                    // Wrap with CitationTooltip if enabled
+                    if (showLiteratureTooltips) {
+                        return (
+                            <CitationTooltip
+                                key={index}
+                                entityName={part}
+                                entityType={entityType}
+                            >
+                                {button}
+                            </CitationTooltip>
+                        );
+                    }
+
+                    return button;
                 }
                 return <span key={index}>{part}</span>;
             })}
@@ -117,3 +156,4 @@ const EntityMention: React.FC<EntityMentionProps> = ({
 };
 
 export default EntityMention;
+

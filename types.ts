@@ -18,9 +18,9 @@ export interface GraphData {
 }
 
 export interface SearchResult {
-  node_id: string;
-  node_name: string;
-  node_type: string;
+  db_id?: string;
+  name: string;
+  type: string;
   score?: number;
 }
 

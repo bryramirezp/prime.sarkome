@@ -127,9 +127,7 @@ const ToolExecutionChips: React.FC<ToolExecutionChipsProps> = ({
                 <div className={`
           inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
           animate-pulse
-          ${darkMode
-                        ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-slate-200'
-                        : 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700'
+          bg-surface border border-border text-secondary
                     }
         `}>
                     <span className="animate-spin">🧠</span>

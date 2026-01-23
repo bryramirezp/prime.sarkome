@@ -1,4 +1,5 @@
-import React from 'react';
+import { generateSuggestedQuestions } from '../services/questionGenerator';
+import { useState, useEffect } from 'react';
 
 /**
  * Suggested questions for the chat empty state.
@@ -39,7 +40,7 @@ export const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
         id: 'tp53-connections',
         emoji: '🧬',
         label: 'Explore TP53 network',
-        query: 'Show me the network of genes and proteins that interact with TP53. What drugs target this pathway?',
+        query: 'Show me the network of genes and proteins that interact with TP53. What drugs target this pathway.',
         category: 'visualization'
     },
     {
@@ -64,53 +65,65 @@ interface SuggestedQuestionsProps {
     maxQuestions?: number;
 }
 
-/**
- * Component that displays suggested questions as clickable cards.
- * Clicking a question immediately sends it to the chat.
- */
 const SuggestedQuestions: React.FC<SuggestedQuestionsProps> = ({
     onSelectQuestion,
     darkMode = false,
     maxQuestions = 4
 }) => {
-    // Rotate questions to show different ones, based on current hour
-    const getRotatedQuestions = () => {
-        const hour = new Date().getHours();
-        const startIndex = hour % SUGGESTED_QUESTIONS.length;
-        const rotated = [
-            ...SUGGESTED_QUESTIONS.slice(startIndex),
-            ...SUGGESTED_QUESTIONS.slice(0, startIndex)
-        ];
-        return rotated.slice(0, maxQuestions);
-    };
+    const [displayQuestions, setDisplayQuestions] = useState<SuggestedQuestion[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const questions = getRotatedQuestions();
+    useEffect(() => {
+        let mounted = true;
+
+        const loadQuestions = async () => {
+            // Start with static rotated questions as instant fallback
+            const hour = new Date().getHours();
+            const startIndex = hour % SUGGESTED_QUESTIONS.length;
+            const rotatedStatic = [
+                ...SUGGESTED_QUESTIONS.slice(startIndex),
+                ...SUGGESTED_QUESTIONS.slice(0, startIndex)
+            ].slice(0, maxQuestions);
+            
+            if (mounted) setDisplayQuestions(rotatedStatic);
+
+            // Fetch dynamic questions
+            try {
+                const dynamic = await generateSuggestedQuestions(maxQuestions);
+                if (mounted && dynamic && dynamic.length > 0) {
+                    setDisplayQuestions(dynamic);
+                }
+            } catch (err) {
+                console.warn("Using static questions due to generation error");
+            } finally {
+                if (mounted) setIsLoading(false);
+            }
+        };
+
+        loadQuestions();
+
+        return () => { mounted = false; };
+    }, [maxQuestions]);
+
+    const questions = displayQuestions;
 
     const getCategoryColor = (category: SuggestedQuestion['category']) => {
         switch (category) {
             case 'repurposing':
-                return darkMode
-                    ? 'border-purple-500/30 hover:border-purple-400/50 hover:bg-purple-500/10'
-                    : 'border-purple-200 hover:border-purple-300 hover:bg-purple-50';
+                return 'border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/5';
             case 'mechanism':
-                return darkMode
-                    ? 'border-cyan-500/30 hover:border-cyan-400/50 hover:bg-cyan-500/10'
-                    : 'border-cyan-200 hover:border-cyan-300 hover:bg-cyan-50';
+                return 'border-cyan-500/20 hover:border-cyan-500/40 hover:bg-cyan-500/5';
             case 'visualization':
-                return darkMode
-                    ? 'border-emerald-500/30 hover:border-emerald-400/50 hover:bg-emerald-500/10'
-                    : 'border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50';
+                return 'border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/5';
             case 'discovery':
             default:
-                return darkMode
-                    ? 'border-amber-500/30 hover:border-amber-400/50 hover:bg-amber-500/10'
-                    : 'border-amber-200 hover:border-amber-300 hover:bg-amber-50';
+                return 'border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/5';
         }
     };
 
     return (
         <div className="w-full max-w-2xl mx-auto">
-            <p className={`text-xs font-medium mb-3 text-center ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+            <p className={`text-xs font-medium mb-3 text-center text-tertiary`}>
                 Try asking...
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -122,13 +135,13 @@ const SuggestedQuestions: React.FC<SuggestedQuestionsProps> = ({
               group flex items-start gap-3 p-4 rounded-xl border text-left
               transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
               ${getCategoryColor(q.category)}
-              ${darkMode ? 'bg-zinc-900/50' : 'bg-white shadow-sm'}
+              bg-surface/50 shadow-sm
             `}
                     >
                         <span className="text-xl flex-shrink-0 group-hover:scale-110 transition-transform">
                             {q.emoji}
                         </span>
-                        <span className={`text-sm font-medium leading-snug ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                        <span className={`text-sm font-medium leading-snug text-primary`}>
                             {q.label}
                         </span>
                     </button>

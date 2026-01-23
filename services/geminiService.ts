@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type, FunctionDeclaration, Tool, Part } from "@google/genai";
 import { GeminiModel } from '../types';
 import { kgService } from './kgService';
+import { searchEntityCitations } from './pubmedService';
 
 // --- Tool Definitions ---
 
@@ -134,6 +135,20 @@ const getDrugCombinationsDecl: FunctionDeclaration = {
       drug: { type: Type.STRING, description: "The name of the drug." },
     },
     required: ["drug"],
+  },
+};
+
+// 12. Literature Search (RAG)
+const getLiteratureDecl: FunctionDeclaration = {
+  name: "getLiterature",
+  description: "Search for scientific literature (PubMed/Europe PMC) to find evidence, papers, or citations for a specific biomedical entity.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      entity: { type: Type.STRING, description: "The name of the entity (gene, drug, disease)." },
+      type: { type: Type.STRING, description: "The type of entity: 'gene', 'drug', 'disease', or 'pathway'. Default: 'gene'" },
+    },
+    required: ["entity"],
   },
 };
 
@@ -276,7 +291,8 @@ const tools: Tool[] = [{
     getDrugRepurposingDecl,
     getTherapeuticTargetsDecl,
     getMechanismDecl,
-    getDrugCombinationsDecl
+    getDrugCombinationsDecl,
+    getLiteratureDecl
   ]
 }];
 
@@ -361,13 +377,14 @@ Use the available tools (searchSemantic, getNeighbors, etc.) to query the graph.
   const chat = ai.chats.create({
     model: modelName,
     config: {
+      maxOutputTokens: 20000,
       tools: activeTools,
       systemInstruction: `You are PrimeAI, an advanced biomedical research assistant with access to the PrimeKG knowledge graph.
 
 ${modeSystemInstruction}
 
 ## YOUR ROLE
-You translate natural language questions into structured knowledge graph queries, then explain the results in clear, scientific language. You bridge human curiosity with biomedical data.
+You translate natural language questions into structured knowledge graph queries AND scientific literature searches. You explain results in clear, scientific language, citing papers when available.
 
 ## RESPONSE GUIDELINES
 Provide natural, cohesive answers. Never include internal process labels, step numbers, or meta-commentary about your workflow. The user should only see the final scientific explanation.
@@ -384,7 +401,9 @@ First, resolve entities using semantic search. Then query appropriate tools. Fin
 - **getDrugRepurposing**: Find drug candidates for a disease
 - **getTherapeuticTargets**: Identify drug targets for a disease
 - **getDrugCombinations**: Find synergistic drug combinations
+- **getDrugCombinations**: Find synergistic drug combinations
 - **getMechanism**: Explain drug-disease mechanism of action
+- **getLiterature**: Find scientific papers to ground your answer with real citations
 
 ## CRITICAL RULES
 1. **Always resolve entities first** - Use searchSemantic before other queries
@@ -490,22 +509,12 @@ ${toolContext}` : ''}`,
               const rawSemantic = await kgService.searchSemantic(args.query as string, abortSignal);
               apiResult = truncateToolResponse(rawSemantic);
               break;
-            case "getNeighbors":
-              onLog?.(`→ PrimeKG: neighbors for ${String(args.nodeId ?? '')}`);
-              const rawNeighbors = await kgService.getNeighbors(args.nodeId as string, abortSignal);
-              apiResult = truncateToolResponse(rawNeighbors);
-              break;
             case "getSubgraph":
               const hops = (args.hops as number) || 1;
               const limit = (args.limit as number) || 50;
               onLog?.(`→ PrimeKG: subgraph for ${String(args.entity ?? '')} (hops=${hops}, limit=${limit})`);
               const rawSubgraph = await kgService.getSubgraph(args.entity as string, hops, limit, abortSignal);
               apiResult = truncateToolResponse(rawSubgraph);
-              break;
-            case "getShortestPath":
-              onLog?.(`→ PrimeKG: path ${String(args.source ?? '')} → ${String(args.target ?? '')}`);
-              const rawPath = await kgService.getShortestPath(args.source as string, args.target as string, abortSignal);
-              apiResult = truncateToolResponse(rawPath);
               break;
             case "getDrugRepurposing":
               onLog?.(`→ PrimeKG: repurposing for ${String(args.disease ?? '')}`);
@@ -519,13 +528,61 @@ ${toolContext}` : ''}`,
               break;
             case "getMechanism":
               onLog?.(`→ PrimeKG: mechanisms ${String(args.drug ?? '')} ↔ ${String(args.disease ?? '')}`);
-              const rawMech = await kgService.getDrugMechanism(args.drug as string, args.disease as string, abortSignal);
-              apiResult = truncateToolResponse(rawMech);
+              try {
+                  const rawMech = await kgService.getDrugMechanism(args.drug as string, args.disease as string, abortSignal);
+                  apiResult = truncateToolResponse(rawMech);
+              } catch (err: any) {
+                  // If 404, it just means no mechanism known, not a system failure.
+                  if (err.message?.includes('404')) {
+                      apiResult = { result: "No direct mechanism of action found in Knowledge Graph." };
+                  } else {
+                      throw err; // Re-throw actual errors
+                  }
+              }
+              break;
+            case "getShortestPath":
+              onLog?.(`→ PrimeKG: path ${String(args.source ?? '')} → ${String(args.target ?? '')}`);
+              try {
+                  const rawPath = await kgService.getShortestPath(args.source as string, args.target as string, abortSignal);
+                  apiResult = truncateToolResponse(rawPath);
+              } catch (err: any) {
+                  if (err.message?.includes('404')) {
+                       apiResult = { result: "No path found between these entities within limit." };
+                  } else {
+                       throw err;
+                  }
+              }
+              break;
+            case "getNeighbors":
+              onLog?.(`→ PrimeKG: neighbors for ${String(args.nodeId ?? '')}`);
+              try {
+                  const rawNeighbors = await kgService.getNeighbors(args.nodeId as string, abortSignal);
+                  apiResult = truncateToolResponse(rawNeighbors);
+              } catch (err: any) {
+                  if (err.message?.includes('404')) {
+                       apiResult = { result: "Entity found, but has no recorded neighbors in this graph view." };
+                  } else {
+                       throw err;
+                  }
+              }
               break;
             case "getDrugCombinations":
               onLog?.(`→ PrimeKG: combinations for ${String(args.drug ?? '')}`);
               const rawCombos = await kgService.getDrugCombinations(args.drug as string, abortSignal);
               apiResult = truncateToolResponse(rawCombos);
+              break;
+            case "getLiterature":
+              onLog?.(`→ PubMed: citations for ${String(args.entity ?? '')}`);
+              const rawLit = await searchEntityCitations(args.entity as string, (args.type as any) || 'gene', 5);
+              
+              // Simplified for LLM consumption
+              apiResult = rawLit.map(p => ({
+                id: p.pmid,
+                title: p.title,
+                year: p.year,
+                cited: p.citedByCount,
+                abstract: p.abstract ? p.abstract.substring(0, 300) + '...' : 'No abstract'
+              }));
               break;
             default:
               apiResult = { error: "Unknown function" };

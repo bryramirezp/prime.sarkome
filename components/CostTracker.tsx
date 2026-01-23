@@ -55,22 +55,22 @@ export const CostTracker: React.FC<CostTrackerProps> = ({ currentUsage, sessionT
     };
 
     return (
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-slate-200 dark:border-zinc-800 rounded-lg p-3 text-xs shadow-sm w-full max-w-[280px] font-mono">
+        <div className="bg-surface/80 backdrop-blur-sm border border-border rounded-lg p-3 text-xs shadow-sm w-full max-w-[280px] font-mono">
             {currentUsage && (
-                <div className="mb-3 pb-3 border-b border-slate-100 dark:border-zinc-800/50">
-                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+                <div className="mb-3 pb-3 border-b border-border/50">
+                    <div className="text-xs font-semibold text-tertiary mb-2 uppercase tracking-wider flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">receipt_long</span>
                         This Query
                     </div>
                     <div className="grid grid-cols-2 gap-y-1 gap-x-4">
-                        <div className="text-slate-500 dark:text-slate-500">Tokens In:</div>
-                        <div className="text-right text-slate-700 dark:text-slate-300">{formatTokens(currentUsage.promptTokens)}</div>
+                        <div className="text-tertiary">Tokens In:</div>
+                        <div className="text-right text-secondary">{formatTokens(currentUsage.promptTokens)}</div>
 
-                        <div className="text-slate-500 dark:text-slate-500">Tokens Out:</div>
-                        <div className="text-right text-slate-700 dark:text-slate-300">{formatTokens(currentUsage.completionTokens)}</div>
+                        <div className="text-tertiary">Tokens Out:</div>
+                        <div className="text-right text-secondary">{formatTokens(currentUsage.completionTokens)}</div>
 
-                        <div className="text-slate-500 dark:text-slate-500">Model:</div>
-                        <div className="text-right text-slate-700 dark:text-slate-300 truncate" title={currentUsage.model}>
+                        <div className="text-tertiary">Model:</div>
+                        <div className="text-right text-secondary truncate" title={currentUsage.model}>
                             {currentUsage.model.replace('gemini-', '').replace('-preview', '')}
                         </div>
 
@@ -83,15 +83,15 @@ export const CostTracker: React.FC<CostTrackerProps> = ({ currentUsage, sessionT
             )}
 
             <div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+                <div className="text-xs font-semibold text-tertiary mb-2 uppercase tracking-wider flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">bar_chart</span>
                     Session Total
                 </div>
                 <div className="flex justify-between items-center">
-                    <div className="text-slate-600 dark:text-slate-400">
+                    <div className="text-tertiary">
                         {sessionTotal.queries} queries
                     </div>
-                    <div className="text-slate-800 dark:text-slate-200 font-bold text-sm">
+                    <div className="text-secondary font-bold text-sm">
                         ${sessionTotal.totalCost.toFixed(4)}
                     </div>
                 </div>

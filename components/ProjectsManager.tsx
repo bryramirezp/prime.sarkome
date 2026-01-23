@@ -76,11 +76,11 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
     });
 
     return (
-        <div className={`flex flex-col h-full ${darkMode ? 'bg-zinc-900' : 'bg-white'}`}>
+        <div className={`flex flex-col h-full bg-[rgb(var(--color-bg-main))]`}>
             {/* Header */}
             <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <h2 className={`text-lg font-semibold text-primary`}>
                         Research Projects
                     </h2>
                     <button
@@ -91,7 +91,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                         <span className="material-symbols-outlined text-[20px]">add</span>
                     </button>
                 </div>
-                <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                <p className={`text-xs text-tertiary`}>
                     Organize your discoveries into collections
                 </p>
 
@@ -103,8 +103,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                             mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
                             transition-colors
                             ${darkMode
-                                ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30'
-                                : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                                ? 'bg-accent/20 text-accent hover:bg-accent/30'
+                                : 'bg-accent/10 text-accent hover:bg-accent/20'
                             }
                         `}
                     >
@@ -126,8 +126,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                 ? 'bg-indigo-500/20 text-indigo-400'
                                 : 'bg-indigo-100 text-indigo-700'
                             : darkMode
-                                ? 'hover:bg-zinc-800 text-slate-300'
-                                : 'hover:bg-slate-100 text-slate-700'
+                                ? 'hover:bg-surface-hover text-secondary'
+                                : 'hover:bg-surface-hover text-secondary'
                         }
           `}
                 >
@@ -138,7 +138,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                 </button>
 
                 {sortedProjects.length === 0 ? (
-                    <div className={`text-center py-8 px-4 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    <div className={`text-center py-8 px-4 text-tertiary`}>
                         <span className="material-symbols-outlined text-3xl mb-2 opacity-50">folder_off</span>
                         <p className="text-xs">No projects yet</p>
                         <p className="text-xs mt-1">Create one to start organizing</p>
@@ -152,11 +152,11 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                   group rounded-lg transition-all
                   ${currentProjectId === project.id
                                         ? darkMode
-                                            ? 'bg-zinc-800'
-                                            : 'bg-slate-100'
+                                            ? 'bg-surface'
+                                            : 'bg-surface'
                                         : darkMode
-                                            ? 'hover:bg-zinc-800/50'
-                                            : 'hover:bg-slate-50'
+                                            ? 'hover:bg-surface-hover/50'
+                                            : 'hover:bg-surface-hover/50'
                                     }
                 `}
                             >
@@ -174,8 +174,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                             className={`
                         w-full px-2 py-1 text-sm rounded border
                         ${darkMode
-                                                    ? 'bg-zinc-900 border-zinc-700 text-white'
-                                                    : 'bg-white border-slate-300 text-slate-900'
+                                                    ? 'bg-surface border-border text-primary'
+                                                    : 'bg-white border-border text-primary'
                                                 }
                       `}
                                             autoFocus
@@ -191,18 +191,18 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                                 className="w-3 h-3 rounded-full flex-shrink-0"
                                                 style={{ backgroundColor: project.color }}
                                             />
-                                            <span className={`text-sm font-medium flex-1 truncate ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                            <span className={`text-sm font-medium flex-1 truncate text-secondary`}>
                                                 {project.name}
                                             </span>
                                             {project.starred && (
                                                 <span className="material-symbols-outlined text-[14px] text-amber-500">star</span>
                                             )}
-                                            <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            <span className={`text-xs text-tertiary`}>
                                                 {project.items.length}
                                             </span>
                                         </div>
                                         {project.description && (
-                                            <p className={`text-xs mt-1 truncate ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                            <p className={`text-xs mt-1 truncate text-tertiary`}>
                                                 {project.description}
                                             </p>
                                         )}
@@ -216,7 +216,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                             e.stopPropagation();
                                             onToggleStar(project.id);
                                         }}
-                                        className={`p-1 rounded hover:bg-surface-hover ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                                        className={`p-1 rounded hover:bg-surface-hover text-secondary`}
                                         title={project.starred ? 'Unstar' : 'Star'}
                                     >
                                         <span className="material-symbols-outlined text-[16px]">
@@ -228,7 +228,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                             e.stopPropagation();
                                             startEditing(project);
                                         }}
-                                        className={`p-1 rounded hover:bg-surface-hover ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                                        className={`p-1 rounded hover:bg-surface-hover text-secondary`}
                                         title="Rename"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -255,14 +255,14 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             {/* Create Project Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className={`max-w-md w-full rounded-2xl p-6 ${darkMode ? 'bg-zinc-900 border border-zinc-800' : 'bg-white shadow-xl'}`}>
-                        <h3 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <div className={`max-w-md w-full rounded-2xl p-6 bg-surface border border-border`}>
+                        <h3 className={`text-lg font-semibold mb-4 text-primary`}>
                             Create New Project
                         </h3>
 
                         <div className="space-y-4">
                             <div>
-                                <label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <label className={`text-sm font-medium mb-1 block text-secondary`}>
                                     Project Name *
                                 </label>
                                 <input
@@ -273,8 +273,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                     className={`
                     w-full px-3 py-2 rounded-lg border text-sm
                     ${darkMode
-                                            ? 'bg-zinc-800 border-zinc-700 text-white placeholder-slate-500'
-                                            : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                                            ? 'bg-surface-hover border-border text-primary placeholder-tertiary'
+                                            : 'bg-white border-border text-primary placeholder-tertiary'
                                         }
                   `}
                                     autoFocus
@@ -282,7 +282,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                             </div>
 
                             <div>
-                                <label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <label className={`text-sm font-medium mb-1 block text-secondary`}>
                                     Description (optional)
                                 </label>
                                 <textarea
@@ -293,15 +293,15 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                     className={`
                     w-full px-3 py-2 rounded-lg border text-sm resize-none
                     ${darkMode
-                                            ? 'bg-zinc-800 border-zinc-700 text-white placeholder-slate-500'
-                                            : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                                            ? 'bg-surface-hover border-border text-primary placeholder-tertiary'
+                                            : 'bg-white border-border text-primary placeholder-tertiary'
                                         }
                   `}
                                 />
                             </div>
 
                             <div>
-                                <label className={`text-sm font-medium mb-2 block ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <label className={`text-sm font-medium mb-2 block text-secondary`}>
                                     Color
                                 </label>
                                 <div className="flex flex-wrap gap-2">
@@ -333,8 +333,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                 className={`
                   flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors
                   ${darkMode
-                                        ? 'bg-zinc-800 text-slate-300 hover:bg-zinc-700'
-                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                        ? 'bg-surface-hover text-secondary hover:bg-surface'
+                                        : 'bg-surface-hover text-secondary hover:bg-surface'
                                     }
                 `}
                             >

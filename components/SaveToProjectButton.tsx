@@ -56,9 +56,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
           transition-all
           ${saved
                         ? 'bg-emerald-500/20 text-emerald-500'
-                        : darkMode
-                            ? 'bg-zinc-800 text-slate-400 hover:bg-zinc-700 hover:text-slate-300'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-700'
+                        : 'bg-surface hover:bg-surface-hover text-secondary hover:text-primary'
                     }
         `}
                 title="Save to project"
@@ -83,17 +81,17 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                     {/* Dropdown Menu */}
                     <div className={`
             absolute right-0 mt-1 w-64 rounded-lg shadow-lg border z-50
-            ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'}
+            bg-surface border-border
           `}>
                         <div className="p-2 max-h-64 overflow-y-auto">
                             {/* Header */}
-                            <div className={`px-2 py-1 text-xs font-medium mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                            <div className={`px-2 py-1 text-xs font-medium mb-1 text-secondary`}>
                                 Save to project
                             </div>
 
                             {/* Projects List */}
                             {projects.length === 0 ? (
-                                <div className={`px-2 py-3 text-xs text-center ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                <div className={`px-2 py-3 text-xs text-center text-tertiary`}>
                                     No projects yet
                                 </div>
                             ) : (
@@ -105,10 +103,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                                             className={`
                         w-full text-left px-2 py-1.5 rounded text-sm
                         flex items-center gap-2
-                        ${darkMode
-                                                    ? 'hover:bg-zinc-800 text-slate-300'
-                                                    : 'hover:bg-slate-100 text-slate-700'
-                                                }
+                        hover:bg-surface-hover text-secondary hover:text-primary
                       `}
                                         >
                                             <div
@@ -116,7 +111,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                                                 style={{ backgroundColor: project.color }}
                                             />
                                             <span className="flex-1 truncate">{project.name}</span>
-                                            <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            <span className={`text-xs text-tertiary`}>
                                                 {project.items.length}
                                             </span>
                                         </button>
@@ -125,7 +120,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                             )}
 
                             {/* Create New Project */}
-                            <div className={`border-t pt-2 ${darkMode ? 'border-zinc-800' : 'border-slate-200'}`}>
+                            <div className={`border-t pt-2 border-border`}>
                                 {showCreateInput ? (
                                     <div className="space-y-2">
                                         <input
@@ -139,10 +134,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                                             placeholder="Project name..."
                                             className={`
                         w-full px-2 py-1.5 text-sm rounded border
-                        ${darkMode
-                                                    ? 'bg-zinc-800 border-zinc-700 text-white placeholder-slate-500'
-                                                    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
-                                                }
+                        bg-surface border-border text-primary placeholder-tertiary
                       `}
                                             autoFocus
                                         />
@@ -165,7 +157,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                                                 }}
                                                 className={`
                           px-2 py-1 text-xs rounded
-                          ${darkMode ? 'bg-zinc-800 text-slate-400' : 'bg-slate-100 text-slate-600'}
+                          bg-surface hover:bg-surface-hover text-secondary
                         `}
                                             >
                                                 Cancel
@@ -178,10 +170,7 @@ const SaveToProjectButton: React.FC<SaveToProjectButtonProps> = ({
                                         className={`
                       w-full text-left px-2 py-1.5 rounded text-sm
                       flex items-center gap-2
-                      ${darkMode
-                                                ? 'hover:bg-zinc-800 text-cyan-400'
-                                                : 'hover:bg-slate-100 text-cyan-600'
-                                            }
+                      hover:bg-surface-hover text-accent
                     `}
                                     >
                                         <span className="material-symbols-outlined text-[16px]">add</span>

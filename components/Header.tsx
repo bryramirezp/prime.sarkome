@@ -16,38 +16,26 @@ const ModelIcon: React.FC<{ model: GeminiModel }> = ({ model }) => {
  * Props for the Header component
  */
 export interface HeaderProps {
-    /** Current dark mode state */
     darkMode: boolean;
-    /** Callback to toggle dark mode */
     onToggleDarkMode?: () => void;
-    /** Callback to toggle sidebar (mobile) */
     onToggleSidebar?: () => void;
-    /** Whether user has configured an API key */
     hasApiKey: boolean;
-    /** Callback to open API key modal */
     onShowApiKeyModal: () => void;
-    /** Currently selected Gemini model */
+    onLogout?: () => void;
     selectedModel: GeminiModel;
-    /** Callback when model selection changes */
     onModelChange: (model: GeminiModel) => void;
-    /** Optional title override for non-chat pages */
     title?: string;
-    /** Whether to show the model selector (only on chat pages) */
     showModelSelector?: boolean;
-    /** Whether to show back button (for non-chat pages) */
     showBackButton?: boolean;
 }
 
-/**
- * Reusable application header component.
- * Displays branding, model selector, API key status, and dark mode toggle.
- */
 const Header: React.FC<HeaderProps> = ({
     darkMode,
     onToggleDarkMode,
     onToggleSidebar,
     hasApiKey,
     onShowApiKeyModal,
+    onLogout,
     selectedModel,
     onModelChange,
     title,
@@ -83,19 +71,22 @@ const Header: React.FC<HeaderProps> = ({
     };
 
     return (
-        <header className="h-16 flex items-center px-5 gap-3 bg-white dark:bg-zinc-950 border-b border-border/50 flex-shrink-0">
-            {/* Logo and Brand - always visible */}
-            <div className="flex items-center gap-3">
-                <img
-                    src="https://em-content.zobj.net/source/twitter/376/cow-face_1f42e.png"
-                    alt="cow"
-                    className="w-8 h-8 brightness-110 contrast-125 hue-rotate-[280deg]"
-                />
-                <div className="flex flex-col">
-                    <span className="font-semibold text-primary tracking-tight text-sm">PrimeKG</span>
-                    <span className="text-[10px] text-tertiary">Precision Medicine</span>
+        <header className="h-16 flex items-center px-5 gap-3 bg-[rgb(var(--color-bg-main))] border-b border-border/50 flex-shrink-0 relative z-[60]">
+            {/* Logo and Brand */}
+            <Link to="/dashboard" className="flex items-center gap-3 group transition-transform hover:scale-105">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <img
+                      src="https://em-content.zobj.net/source/twitter/376/cow-face_1f42e.png"
+                      alt="cow"
+                      className="w-8 h-8 brightness-110 contrast-125 hue-rotate-[280deg] relative z-10"
+                  />
                 </div>
-            </div>
+                <div className="flex flex-col">
+                    <span className="font-bold text-primary tracking-tight text-sm bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500">PRIME-LAB</span>
+                    <span className="text-[10px] font-semibold text-tertiary tracking-widest uppercase">Bio-Simulation</span>
+                </div>
+            </Link>
 
             {/* Mobile menu button */}
             <div className="flex items-center gap-2 md:hidden ml-auto">
@@ -110,8 +101,7 @@ const Header: React.FC<HeaderProps> = ({
                 )}
             </div>
 
-
-            {/* Center: Model selector (visible on desktop, only on chat pages) */}
+            {/* Center: Model selector */}
             {showModelSelectorProp && (
                 <div ref={modelDropdownRef} className="absolute left-1/2 -translate-x-1/2 z-50">
                     <button
@@ -120,15 +110,15 @@ const Header: React.FC<HeaderProps> = ({
                         aria-expanded={isModelDropdownOpen}
                         aria-haspopup="listbox"
                     >
-                        <div className="flex items-center justify-center w-7 h-7 bg-surface-hover rounded-full text-accent">
+                        <div className="flex items-center justify-center w-7 h-7 bg-indigo-500/10 rounded-full text-indigo-500">
                             <ModelIcon model={selectedModel} />
                         </div>
-                        <span className="text-xs font-medium text-primary">
+                        <span className="text-xs font-semibold text-primary">
                             {selectedModel === GeminiModel.FLASH
                                 ? 'Gemini 3.0 Flash'
                                 : selectedModel === GeminiModel.PRO
                                     ? 'Gemini 3.0 Pro'
-                                    : 'Gemini 2.0 Flash Exp'
+                                    : 'Gemini 2.0 Flash'
                             }
                         </span>
                         <span className="material-symbols-outlined text-[14px] text-tertiary">expand_more</span>
@@ -137,14 +127,14 @@ const Header: React.FC<HeaderProps> = ({
                     {/* Model dropdown */}
                     {isModelDropdownOpen && (
                         <div
-                            className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-white dark:bg-zinc-900 border border-border rounded-xl shadow-xl overflow-hidden animate-scale-in"
+                            className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl overflow-hidden animate-scale-in"
                             role="listbox"
                         >
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.FLASH)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.FLASH
-                                    ? 'bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-slate-100'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100'
+                                    ? 'bg-surface text-primary'
+                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.FLASH}
@@ -155,8 +145,8 @@ const Header: React.FC<HeaderProps> = ({
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.PRO)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.PRO
-                                    ? 'bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-slate-100'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100'
+                                    ? 'bg-surface text-primary'
+                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.PRO}
@@ -167,14 +157,14 @@ const Header: React.FC<HeaderProps> = ({
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.FLASH_2_0_EXP)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.FLASH_2_0_EXP
-                                    ? 'bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-slate-100'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100'
+                                    ? 'bg-surface text-primary'
+                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.FLASH_2_0_EXP}
                             >
                                 <span className="material-symbols-outlined text-[16px]">science</span>
-                                Gemini 2.0 Flash Exp
+                                Gemini 2.0 Flash
                             </button>
                         </div>
                     )}
@@ -182,40 +172,31 @@ const Header: React.FC<HeaderProps> = ({
             )}
 
 
-            {/* Desktop brand (when model selector is hidden) */}
-            {!showModelSelectorProp && (
-                <div className="hidden md:flex items-center gap-2">
-                    {showBackButton && (
-                        <Link
-                            to="/chat"
-                            className="flex items-center gap-2 text-sm font-medium transition-colors text-secondary hover:text-primary mr-4"
-                        >
-                            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-                            <span>Back to Chat</span>
-                        </Link>
-                    )}
-                    <span className="font-medium text-primary">{title || 'PrimeKG'}</span>
-                </div>
-            )}
 
-            {/* Right side: API key button and dark mode toggle */}
+            {/* Right side controls */}
             <div className="flex items-center gap-3 ml-auto">
-                <button
-                    onClick={onShowApiKeyModal}
-                    className={`flex items-center gap-1.5 text-xs font-medium transition-colors px-3 py-1.5 rounded-full hover:bg-surface ${hasApiKey ? 'text-secondary hover:text-primary' : 'text-amber-500 hover:text-amber-400'
-                        }`}
-                    aria-label={hasApiKey ? 'Manage API Key' : 'Set API Key'}
-                >
-                    <span className="material-symbols-outlined text-[16px]">vpn_key</span>
-                    <span>{hasApiKey ? 'API Key' : 'Set Key'}</span>
-                </button>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/5 border border-indigo-500/10 rounded-full">
+                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                   <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Active clearance</span>
+                </div>
+
+                <div className="h-4 w-[1px] bg-border/50 mx-1" />
+
+                {onLogout && (
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-1.5 text-xs font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest px-2 py-1"
+                        title="Lock Laboratory (Logout)"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">lock</span>
+                    </button>
+                )}
 
                 {onToggleDarkMode && (
                     <button
                         onClick={onToggleDarkMode}
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface text-secondary hover:text-primary transition-colors"
-                        title="Toggle dark mode"
-                        aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-secondary hover:text-primary transition-colors border border-transparent hover:border-border"
+                        title="Toggle terminal mode"
                     >
                         <span className="material-symbols-outlined text-[20px]">
                             {darkMode ? 'light_mode' : 'dark_mode'}

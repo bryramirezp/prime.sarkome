@@ -38,9 +38,7 @@ export default function DeleteConfirmationModal({
         onClick={onClose}
     >
       <div 
-        className={`w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-scale-in border ${
-            darkMode ? 'bg-[#18181b] border-zinc-800' : 'bg-white border-zinc-200'
-        }`}
+        className={`w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-scale-in border bg-surface border-border`}
         onClick={e => e.stopPropagation()}
       >
         <div className="p-6 flex flex-col items-center text-center">
@@ -52,22 +50,18 @@ export default function DeleteConfirmationModal({
             </span>
           </div>
           
-          <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-zinc-100' : 'text-zinc-800'}`}>
+          <h3 className={`text-lg font-semibold mb-2 text-primary`}>
             {title}
           </h3>
           
-          <p className={`text-sm leading-relaxed mb-6 ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}>
+          <p className={`text-sm leading-relaxed mb-6 text-tertiary`}>
             {description}
           </p>
 
           <div className="flex gap-3 w-full">
             <button
               onClick={onClose}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                darkMode 
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white' 
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900'
-              }`}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors bg-surface-hover text-secondary hover:bg-surface hover:text-primary`}
             >
               Cancel
             </button>

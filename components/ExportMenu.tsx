@@ -329,9 +329,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ project, darkMode = false }) =>
                 className={`
           inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium
           transition-colors
-          ${darkMode
-                        ? 'bg-zinc-800 text-slate-300 hover:bg-zinc-700'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+          bg-surface text-secondary hover:bg-surface-hover
                     }
           ${exporting ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -351,7 +349,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ project, darkMode = false }) =>
 
                     <div className={`
             absolute right-0 mt-1 w-48 rounded-lg shadow-lg border z-50
-            ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200'}
+            bg-surface border-border
           `}>
                         <div className="p-1">
                             <button
@@ -359,10 +357,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({ project, darkMode = false }) =>
                                 className={`
                   w-full text-left px-3 py-2 rounded text-sm
                   flex items-center gap-2
-                  ${darkMode
-                                        ? 'hover:bg-zinc-800 text-slate-300'
-                                        : 'hover:bg-slate-100 text-slate-700'
-                                    }
+                  hover:bg-surface-hover text-secondary
                 `}
                             >
                                 <span className="material-symbols-outlined text-[18px]">code</span>

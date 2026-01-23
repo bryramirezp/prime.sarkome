@@ -18,8 +18,7 @@ export default function DocsSidebar({ darkMode, currentSlug }: DocsSidebarProps)
     }, {} as Record<string, typeof DOCS_SECTIONS>);
 
     return (
-        <aside className={`w-64 flex-shrink-0 border-r h-screen sticky top-0 overflow-y-auto hidden md:block
-        ${darkMode ? 'border-zinc-800 bg-zinc-900/50' : 'border-slate-200 bg-white/50'}`}>
+        <aside className={`w-64 flex-shrink-0 border-r h-screen sticky top-0 overflow-y-auto hidden md:block border-border bg-[rgb(var(--color-bg-main))]`}>
             <div className="p-6">
                 <Link to="/" className="flex items-center gap-2 mb-8 group">
                     <span className="material-symbols-outlined text-tertiary group-hover:text-primary transition-colors">arrow_back</span>
@@ -48,7 +47,7 @@ export default function DocsSidebar({ darkMode, currentSlug }: DocsSidebarProps)
                                                 : 'text-secondary hover:bg-surface-hover hover:text-primary'
                                             }`}
                                     >
-                                        <span className={`material-symbols-outlined text-[18px] ${currentSlug === item.id || location.pathname === `/docs/${item.id}` ? 'text-accent' : 'text-slate-400'}`}>
+                                        <span className={`material-symbols-outlined text-[18px] ${currentSlug === item.id || location.pathname === `/docs/${item.id}` ? 'text-accent' : 'text-tertiary'}`}>
                                             {item.icon}
                                         </span>
                                         {item.title}

@@ -68,7 +68,7 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
 
     if (project.items.length === 0) {
         return (
-            <div className={`flex flex-col items-center justify-center h-full p-8 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <div className={`flex flex-col items-center justify-center h-full p-8 text-tertiary`}>
                 <span className="material-symbols-outlined text-5xl mb-4 opacity-50">folder_open</span>
                 <p className="text-sm font-medium mb-1">No items in this project yet</p>
                 <p className="text-xs text-center max-w-xs">
@@ -87,16 +87,16 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: project.color }}
                     />
-                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <h2 className={`text-xl font-bold text-primary`}>
                         {project.name}
                     </h2>
                 </div>
                 {project.description && (
-                    <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <p className={`text-sm text-secondary`}>
                         {project.description}
                     </p>
                 )}
-                <div className={`text-xs mt-2 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                <div className={`text-xs mt-2 text-tertiary`}>
                     {project.items.length} item{project.items.length !== 1 ? 's' : ''} • Updated {formatDate(project.updatedAt)}
                 </div>
             </div>
@@ -112,7 +112,7 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                             key={item.id}
                             className={`
                 border rounded-xl p-4 transition-all
-                ${darkMode ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700' : 'bg-white border-slate-200 hover:border-slate-300'}
+                ${darkMode ? 'bg-surface/50 border-border hover:border-border' : 'bg-white border-border hover:border-border'}
               `}
                         >
                             {/* Item Header */}
@@ -129,7 +129,7 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                                 }}
                                                 className={`
                           font-semibold text-sm truncate hover:underline
-                          ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}
+                          text-accent
                           ${item.type !== 'entity' ? 'cursor-default hover:no-underline' : ''}
                         `}
                                             >
@@ -137,12 +137,12 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                             </button>
                                             <span className={`
                         text-xs px-2 py-0.5 rounded-full
-                        ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}
+                        bg-surface-hover text-tertiary
                       `}>
                                                 {getItemTypeLabel(item.type)}
                                             </span>
                                         </div>
-                                        <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                        <div className={`text-xs text-tertiary`}>
                                             Saved {formatDate(item.timestamp)}
                                         </div>
 
@@ -154,7 +154,7 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                                         key={idx}
                                                         className={`
                               text-xs px-2 py-0.5 rounded-full
-                              ${darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-700'}
+                              bg-accent/20 text-accent
                             `}
                                                     >
                                                         {tag}
@@ -171,7 +171,7 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                         onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
                                         className={`
                       p-1 rounded hover:bg-surface-hover
-                      ${darkMode ? 'text-slate-400' : 'text-slate-600'}
+                      text-secondary
                     `}
                                         title={isExpanded ? 'Collapse' : 'Expand'}
                                     >
@@ -197,18 +197,18 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                             {isExpanded && (
                                 <div className={`
                   mt-3 pt-3 border-t space-y-3
-                  ${darkMode ? 'border-zinc-800' : 'border-slate-200'}
+                  border-border
                 `}>
                                     {/* Notes Section */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <label className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                            <label className={`text-xs font-medium text-secondary`}>
                                                 Notes
                                             </label>
                                             {!isEditingNotes && (
                                                 <button
                                                     onClick={() => startEditingNotes(item)}
-                                                    className={`text-xs ${darkMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-700'}`}
+                                                    className={`text-xs text-accent hover:underline`}
                                                 >
                                                     {item.notes ? 'Edit' : 'Add notes'}
                                                 </button>
@@ -225,8 +225,8 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                                     className={`
                             w-full px-3 py-2 rounded-lg border text-sm resize-none
                             ${darkMode
-                                                            ? 'bg-zinc-800 border-zinc-700 text-white placeholder-slate-500'
-                                                            : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                                                            ? 'bg-surface border-border text-primary placeholder-tertiary'
+                                                            : 'bg-white border-border text-primary placeholder-tertiary'
                                                         }
                           `}
                                                     autoFocus
@@ -240,18 +240,18 @@ const ProjectViewer: React.FC<ProjectViewerProps> = ({
                                                     </button>
                                                     <button
                                                         onClick={() => setEditingNotesId(null)}
-                                                        className={`px-3 py-1 text-xs rounded ${darkMode ? 'bg-zinc-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}
+                                                        className={`px-3 py-1 text-xs rounded bg-surface text-secondary`}
                                                     >
                                                         Cancel
                                                     </button>
                                                 </div>
                                             </div>
                                         ) : item.notes ? (
-                                            <p className={`text-sm ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                            <p className={`text-sm text-secondary`}>
                                                 {item.notes}
                                             </p>
                                         ) : (
-                                            <p className={`text-sm italic ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            <p className={`text-sm italic text-tertiary`}>
                                                 No notes yet
                                             </p>
                                         )}

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { queryClient } from './lib/queryClient';
+import { ApiKeyProvider } from './contexts/ApiKeyContext';
 import './index.css';
 import App from './App';
 
@@ -16,16 +17,18 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-        <Toaster position="bottom-right" toastOptions={{
-          style: {
-            background: '#18181b',
-            color: '#fff',
-            border: '1px solid #27272a'
-          }
-        }} />
-      </BrowserRouter>
+      <ApiKeyProvider>
+        <BrowserRouter>
+          <App />
+          <Toaster position="bottom-right" toastOptions={{
+            style: {
+              background: '#18181b',
+              color: '#fff',
+              border: '1px solid #27272a'
+            }
+          }} />
+        </BrowserRouter>
+      </ApiKeyProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

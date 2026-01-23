@@ -113,7 +113,7 @@ export default function Sidebar({
         />
       )}
 
-      <aside className={`flex-shrink-0 flex-col border-r border-border bg-white dark:bg-zinc-950 md:bg-background/50 backdrop-blur-xl transition-all duration-300 h-full text-slate-900 dark:text-slate-100
+      <aside className={`flex-shrink-0 flex-col border-r border-border bg-[rgb(var(--color-bg-main))] md:bg-[rgb(var(--color-bg-main))]/50 backdrop-blur-xl transition-all duration-300 h-full text-secondary
         ${visibilityClass}
         ${isCollapsed ? 'w-[68px]' : 'w-[280px]'}
       `}>
@@ -157,7 +157,7 @@ export default function Sidebar({
               <button
                 onClick={() => setActiveTab('sessions')}
                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${activeTab === 'sessions'
-                  ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                  ? 'bg-[rgb(var(--color-bg-main))] text-primary shadow-sm'
                   : 'text-secondary hover:text-primary'
                   }`}
               >
@@ -169,7 +169,7 @@ export default function Sidebar({
               <button
                 onClick={() => setActiveTab('projects')}
                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${activeTab === 'projects'
-                  ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm'
+                  ? 'bg-[rgb(var(--color-bg-main))] text-primary shadow-sm'
                   : 'text-secondary hover:text-primary'
                   }`}
               >
@@ -210,18 +210,18 @@ export default function Sidebar({
                   }}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-3 cursor-pointer ${session.pinned
                     ? currentSessionId === session.id
-                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-slate-900 dark:text-slate-100 shadow-sm'
-                      : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-slate-700 dark:text-slate-300'
+                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-primary shadow-sm'
+                      : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-secondary'
                     : currentSessionId === session.id
-                      ? 'bg-surface shadow-sm border border-border text-slate-900 dark:text-slate-100'
-                      : 'hover:bg-surface-hover/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                      ? 'bg-surface shadow-sm border border-border text-primary'
+                      : 'hover:bg-surface-hover/50 text-tertiary hover:text-primary'
                     }`}
                 >
                   <span className={`material-symbols-outlined text-[18px] ${session.pinned
                     ? 'text-amber-500'
                     : currentSessionId === session.id
                       ? 'text-accent'
-                      : 'text-slate-400 group-hover:text-accent/70'
+                      : 'text-tertiary group-hover:text-accent/70'
                     }`}>chat_bubble</span>
 
                   {renaming === session.id ? (
@@ -229,7 +229,7 @@ export default function Sidebar({
                       type="text"
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
-                      className="flex-1 min-w-0 bg-transparent border-b border-indigo-500 focus:outline-none text-sm text-slate-900 dark:text-slate-100"
+                      className="flex-1 min-w-0 bg-transparent border-b border-indigo-500 focus:outline-none text-sm text-primary"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                       onKeyDown={(e) => {
@@ -260,14 +260,14 @@ export default function Sidebar({
                       }}
                       className={`opacity-0 group-hover:opacity-100 p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-all flex-shrink-0 ${openMenu === session.id ? 'opacity-100' : ''}`}
                     >
-                      <span className="material-symbols-outlined text-[18px] text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">more_vert</span>
+                      <span className="material-symbols-outlined text-[18px] text-tertiary hover:text-primary">more_vert</span>
                     </button>
                   )}
                 </div>
 
                 {/* Dropdown Menu */}
                 {openMenu === session.id && !isCollapsed && (
-                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-white dark:bg-zinc-900 border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
+                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -275,7 +275,7 @@ export default function Sidebar({
                         setNewTitle(session.title);
                         setOpenMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover rounded-lg flex items-center gap-2 text-secondary"
                     >
                       <span className="material-symbols-outlined text-[16px]">edit</span> Rename
                     </button>
@@ -285,7 +285,7 @@ export default function Sidebar({
                         onSessionPin?.(session.id, !session.pinned);
                         setOpenMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover rounded-lg flex items-center gap-2 text-secondary"
                     >
                       <span className="material-symbols-outlined text-[16px]">{session.pinned ? 'push_pin' : 'push_pin'}</span> {session.pinned ? 'Unpin' : 'Pin'}
                     </button>
@@ -308,7 +308,7 @@ export default function Sidebar({
             {previousSessions.length > 0 && (
               <div className="flex items-center gap-2 px-2 py-3 mt-2">
                 <div className="h-px flex-1 bg-border"></div>
-                {!isCollapsed && <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Previous</span>}
+                {!isCollapsed && <span className="text-[10px] font-medium text-tertiary uppercase tracking-wider">Previous</span>}
                 <div className="h-px flex-1 bg-border"></div>
               </div>
             )}
@@ -323,18 +323,18 @@ export default function Sidebar({
                   }}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-3 cursor-pointer ${session.pinned
                     ? currentSessionId === session.id
-                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-slate-900 dark:text-slate-100 shadow-sm'
-                      : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-slate-700 dark:text-slate-300'
+                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-primary shadow-sm'
+                      : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-secondary'
                     : currentSessionId === session.id
-                      ? 'bg-surface shadow-sm border border-border text-slate-900 dark:text-slate-100'
-                      : 'hover:bg-surface-hover/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                      ? 'bg-surface shadow-sm border border-border text-primary'
+                      : 'hover:bg-surface-hover/50 text-tertiary hover:text-primary'
                     }`}
                 >
                   <span className={`material-symbols-outlined text-[18px] ${session.pinned
                     ? 'text-amber-500'
                     : currentSessionId === session.id
                       ? 'text-accent'
-                      : 'text-slate-400 group-hover:text-accent/70'
+                      : 'text-tertiary group-hover:text-accent/70'
                     }`}>chat_bubble_outline</span>
 
                   <span className={`truncate flex-1 font-medium ${isCollapsed ? 'hidden' : ''}`}>{session.title}</span>
@@ -354,14 +354,14 @@ export default function Sidebar({
                       }}
                       className={`opacity-0 group-hover:opacity-100 p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-all flex-shrink-0 ${openMenu === session.id ? 'opacity-100' : ''}`}
                     >
-                      <span className="material-symbols-outlined text-[18px] text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">more_vert</span>
+                      <span className="material-symbols-outlined text-[18px] text-tertiary hover:text-primary">more_vert</span>
                     </button>
                   )}
                 </div>
 
                 {/* Dropdown Menu (Duplicate logic, ideally componentize) */}
                 {openMenu === session.id && !isCollapsed && (
-                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-white dark:bg-zinc-900 border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
+                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -369,7 +369,7 @@ export default function Sidebar({
                         setNewTitle(session.title);
                         setOpenMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover rounded-lg flex items-center gap-2 text-secondary"
                     >
                       <span className="material-symbols-outlined text-[16px]">edit</span> Rename
                     </button>
@@ -379,7 +379,7 @@ export default function Sidebar({
                         onSessionPin?.(session.id, !session.pinned);
                         setOpenMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover rounded-lg flex items-center gap-2 text-secondary"
                     >
                       <span className="material-symbols-outlined text-[16px]">{session.pinned ? 'push_pin' : 'push_pin'}</span> {session.pinned ? 'Unpin' : 'Pin'}
                     </button>
@@ -424,19 +424,19 @@ export default function Sidebar({
             to="/docs"
             onClick={onCloseMobile}
             className={`w-full flex items-center gap-3 text-sm rounded-xl transition-all duration-200 group ${location.pathname.startsWith('/docs')
-              ? 'bg-surface-hover text-slate-900 dark:text-slate-100'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-surface-hover/50'
+              ? 'bg-surface-hover text-primary'
+              : 'text-tertiary hover:text-primary hover:bg-surface-hover/50'
               } ${isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'}`}
             title={isCollapsed ? 'Documentation' : undefined}
           >
-            <span className="material-symbols-outlined text-[18px] text-slate-400 group-hover:text-accent transition-colors">menu_book</span>
+            <span className="material-symbols-outlined text-[18px] text-tertiary group-hover:text-accent transition-colors">menu_book</span>
             {!isCollapsed && <span className="font-medium">Documentation</span>}
           </Link>
 
           {/* Collapse Toggle Button (desktop only) */}
           <button
             onClick={onToggleCollapse}
-            className={`hidden md:flex items-center gap-3 w-full text-sm rounded-xl transition-all duration-200 group text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-surface-hover/50
+            className={`hidden md:flex items-center gap-3 w-full text-sm rounded-xl transition-all duration-200 group text-tertiary hover:text-primary hover:bg-surface-hover/50
               ${isCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'}`}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -450,4 +450,3 @@ export default function Sidebar({
     </>
   );
 }
-
