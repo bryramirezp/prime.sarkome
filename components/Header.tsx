@@ -27,6 +27,7 @@ export interface HeaderProps {
     onLogout?: () => void;
     selectedModel: GeminiModel;
     onModelChange: (model: GeminiModel) => void;
+    onShowRecoveryKey?: () => void;
     title?: string;
     showModelSelector?: boolean;
     showBackButton?: boolean;
@@ -41,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({
     onLogout,
     selectedModel,
     onModelChange,
+    onShowRecoveryKey,
     title,
     showModelSelector: showModelSelectorProp = true,
     showBackButton = false,
@@ -197,6 +199,15 @@ const Header: React.FC<HeaderProps> = ({
                 >
                     <span className="material-symbols-outlined text-[20px]">key</span>
                 </button>
+                {onShowRecoveryKey && (
+                    <button 
+                        onClick={onShowRecoveryKey}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all border text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20" 
+                        title="Recovery Key - Backup & Restore Your Chats"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">vpn_key</span>
+                    </button>
+                )}
                 {onToggleDarkMode && (
                     <button 
                         onClick={onToggleDarkMode}

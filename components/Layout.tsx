@@ -4,6 +4,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import AppBackground from './AppBackground';
 import ApiKeyModal from './ApiKeyModal';
+import RecoveryKeyModal from './RecoveryKeyModal';
 import { GeminiModel } from '../types';
 import { ChatSession } from '../schemas/sessionSchema';
 import { useProjects } from '../hooks/useProjects';
@@ -55,12 +56,25 @@ const Layout: React.FC<LayoutProps> = ({
         return true;
     });
     const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+    const [showRecoveryKeyModal, setShowRecoveryKeyModal] = useState(false);
     const [selectedModel, setSelectedModel] = useState<GeminiModel>(GeminiModel.FLASH);
 
     // Persist sidebar collapsed state in sessionStorage
     useEffect(() => {
         sessionStorage.setItem('primekg_sidebar_collapsed', String(sidebarCollapsed));
     }, [sidebarCollapsed]);
+
+    // Show Recovery Key modal on first visit
+    useEffect(() => {
+        const hasSeenKey = localStorage.getItem('primekg_has_seen_recovery_key');
+        if (!hasSeenKey) {
+            // Show after a short delay so the user sees the app first
+            const timer = setTimeout(() => {
+                setShowRecoveryKeyModal(true);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     // Determine context based on route
     const isChatPage = location.pathname === '/chat';
@@ -94,6 +108,13 @@ const Layout: React.FC<LayoutProps> = ({
                 darkMode={darkMode}
             />
 
+            {/* Recovery Key Modal */}
+            <RecoveryKeyModal
+                isOpen={showRecoveryKeyModal}
+                onClose={() => setShowRecoveryKeyModal(false)}
+                darkMode={darkMode}
+            />
+
             {/* Header - Fixed at top */}
             <Header
                 darkMode={darkMode}
@@ -104,6 +125,7 @@ const Layout: React.FC<LayoutProps> = ({
                 onLogout={clearApiKey}
                 selectedModel={selectedModel}
                 onModelChange={setSelectedModel}
+                onShowRecoveryKey={() => setShowRecoveryKeyModal(true)}
                 title={getPageTitle()}
                 showModelSelector={isChatPage}
                 showBackButton={!isDashboard && !isChatPage}
