@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ChatContent from './pages/ChatContent';
@@ -70,70 +71,73 @@ function App() {
 
 
   return (
-    <Routes>
-      {/* Documentation Routes (Standalone Layout) */}
-      <Route path="/docs" element={<Navigate to="/docs/primekg-graph" replace />} />
-      <Route path="/docs/:slug" element={<DocsPage darkMode={darkMode} />} />
-      <Route path="/faq" element={<FaqPage darkMode={darkMode} />} />
+    <>
+      <Routes>
+        {/* Documentation Routes (Standalone Layout) */}
+        <Route path="/docs" element={<Navigate to="/docs/primekg-graph" replace />} />
+        <Route path="/docs/:slug" element={<DocsPage darkMode={darkMode} />} />
+        <Route path="/faq" element={<FaqPage darkMode={darkMode} />} />
 
-      {/* Layout wrapper for all other routes */}
-      <Route
-        element={
-          <Layout
-            darkMode={darkMode}
-            onToggleDarkMode={toggleDarkMode}
-            sessions={sessions}
-            currentSessionId={currentSessionId}
-            onSessionLoad={loadSession}
-            onSessionCreate={createSession}
-            onSessionDelete={deleteSession}
-            onSessionRename={renameSession}
-            onSessionPin={pinSession}
-            onDeleteAll={deleteAll}
-            isOffline={isOffline}
-            projectsHook={projectsHook}
-          />
-        }
-      >
-        {/* Default redirect to dashboard */}
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        
-        {/* Bio-Lab Dashboard */}
-        <Route path="/dashboard" element={<LabDashboard />} />
-
-        {/* Chat page - main functionality */}
+        {/* Layout wrapper for all other routes */}
         <Route
-          path="/chat"
           element={
-            <ChatContent
-              currentSession={currentSession}
-              onSaveSession={saveCurrentSession}
+            <Layout
+              darkMode={darkMode}
+              onToggleDarkMode={toggleDarkMode}
+              sessions={sessions}
+              currentSessionId={currentSessionId}
+              onSessionLoad={loadSession}
+              onSessionCreate={createSession}
+              onSessionDelete={deleteSession}
+              onSessionRename={renameSession}
+              onSessionPin={pinSession}
+              onDeleteAll={deleteAll}
+              isOffline={isOffline}
+              projectsHook={projectsHook}
             />
           }
-        />
+        >
+          {/* Default redirect to dashboard */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Bio-Lab Dashboard */}
+          <Route path="/dashboard" element={<LabDashboard />} />
 
-        {/* Graph Explorer page */}
-        <Route path="/graph" element={<GraphExplorer darkMode={darkMode} />} />
+          {/* Chat page - main functionality */}
+          <Route
+            path="/chat"
+            element={
+              <ChatContent
+                currentSession={currentSession}
+                onSaveSession={saveCurrentSession}
+              />
+            }
+          />
 
-        {/* Hypothesis Simulator Game */}
-        <Route path="/HypothesisSimulator" element={<HypothesisSimulator />} />
+          {/* Graph Explorer page */}
+          <Route path="/graph" element={<GraphExplorer darkMode={darkMode} />} />
 
-        {/* Hypothesis Hub (New Unified Dashboard) */}
-        <Route path="/hypothesis" element={<HypothesisHub />} />
+          {/* Hypothesis Simulator Game */}
+          <Route path="/HypothesisSimulator" element={<HypothesisSimulator />} />
 
-        {/* Molecular Simulator (New) */}
-        <Route path="/molecular" element={<MolecularSim />} />
+          {/* Hypothesis Hub (New Unified Dashboard) */}
+          <Route path="/hypothesis" element={<HypothesisHub />} />
 
-        {/* Statistics page */}
-        <Route path="/stats" element={<StatsPage darkMode={darkMode} />} />
+          {/* Molecular Simulator (New) */}
+          <Route path="/molecular" element={<MolecularSim />} />
 
-        {/* Projects page */}
-        <Route path="/projects" element={<ProjectsPage />} />
+          {/* Statistics page */}
+          <Route path="/stats" element={<StatsPage darkMode={darkMode} />} />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Route>
-    </Routes>
+          {/* Projects page */}
+          <Route path="/projects" element={<ProjectsPage />} />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Routes>
+      <SpeedInsights />
+    </>
   );
 }
 
