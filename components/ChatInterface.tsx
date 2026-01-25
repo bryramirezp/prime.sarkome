@@ -35,37 +35,49 @@ const ModelIcon: React.FC<{ model: GeminiModel; className?: string }> = ({ model
 
 const inferNodeType = (edge: any, isSource: boolean): string => {
   // 1. Try explicit type fields if available (API might return them)
-  if (isSource && edge.source_type) return edge.source_type;
-  if (!isSource && edge.target_type) return edge.target_type;
+  // Normalize API types to Title Case (e.g. "disease" -> "Disease")
+  const type = isSource ? edge.source_type : edge.target_type;
+  if (type) {
+    if (type.toLowerCase() === 'geneprotein') return 'GeneProtein';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
 
   // 2. Infer from known relation semantics (PrimeKG rules)
   const rel = (edge.relation || '').toLowerCase();
   const otherType = (isSource ? (edge.target_type || '') : (edge.source_type || '')).toLowerCase();
 
   // Indication: Drug <-> Disease
-  if (rel === 'indication' || rel === 'contraindication') {
-    if (otherType.includes('drug')) return 'disease';
-    if (otherType.includes('disease')) return 'drug';
+  if (rel === 'indication' || rel === 'contraindication' || rel === 'off_label_use') {
+    if (otherType.includes('drug')) return 'Disease';
+    if (otherType.includes('disease')) return 'Drug';
   }
 
   // Drug Targets: Drug -> Gene/Protein
-  if (rel === 'target') {
-    if (isSource) return 'drug';
-    return 'geneprotein';
+  if (rel === 'target' || rel === 'transporter' || rel === 'enzyme' || rel === 'carrier') {
+    if (isSource) return 'Drug';
+    return 'GeneProtein';
   }
 
   // Synergistic interaction: Drug <-> Drug
   if (rel === 'synergistic_interaction') {
-    return 'drug';
+    return 'Drug';
   }
 
-  // Hierarchy: Usually preserves type (Disease->Disease, Anatomy->Anatomy)
-  if (rel === 'parent_child' && otherType) {
-    return otherType;
+  // PPI: Protein <-> Protein
+  if (rel === 'ppi') {
+    return 'GeneProtein';
   }
 
-  return 'unknown';
+  // Disease-Phenotype
+  if (rel.includes('phenotype')) {
+    if (otherType.includes('disease')) return 'Phenotype';
+    return 'Disease';
+  }
+  
+  return 'Unknown';
 };
+
+
 
 // Utility to extract graph data from tool results
 const extractGraphData = (toolResults: Array<{ name: string; args: any; result: any }> | undefined): GraphData | undefined => {
@@ -129,7 +141,7 @@ const extractGraphData = (toolResults: Array<{ name: string; args: any; result: 
           graphNodes.push({
             id: nodeId,
             name: node.name || nodeId,
-            type: node.type || 'unknown',
+            type: node.type ? (node.type.toLowerCase() === 'geneprotein' ? 'GeneProtein' : node.type.charAt(0).toUpperCase() + node.type.slice(1)) : 'Unknown',
             ...node
           });
         }

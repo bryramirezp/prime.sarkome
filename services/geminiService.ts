@@ -422,8 +422,8 @@ Provide natural, cohesive answers. Never include internal process labels, step n
 First, resolve entities using semantic search. Then query appropriate tools. Finally, synthesize findings into clear explanations with biological context.
 
 ## TOOL SELECTION
-- **searchSemantic**: For concepts, categories, or uncertain names ("MDM2 inhibitors", "lung cancer drugs")
-- **searchText**: Only for exact entity names ("Aspirin", "TP53")
+- **searchSemantic**: **PRIMARY TOOL**. Use this for ALL entity resolution triggers ("tibia fracture", "Aspirin"). It searches across all types (Disease, Phenotype, Drug, etc.) and handles synonyms.
+- **searchText**: **FALLBACK ONLY**. Use only if semantic search fails to find a specific exact name.
 - **getNeighbors**: Find direct connections to an entity
 - **getSubgraph**: Visualize local network around an entity
 - **getShortestPath**: Find how two entities connect
@@ -436,7 +436,7 @@ First, resolve entities using semantic search. Then query appropriate tools. Fin
 - **getLiterature**: Find scientific papers to ground your answer with real citations
 
 ## CRITICAL RULES
-1. **Always resolve entities first** - Use searchSemantic before other queries
+1. **Always start with searchSemantic** - Even for specific names like "Aspirin", use semantic search to get the canonical ID and Type (e.g. is it a Drug or Phenotype?).
 2. **Pivot when needed** - If direct search fails, try indirect strategies (e.g., for TP53, search MDM2 regulators)
 3. **Synthesize, don't dump** - Never show raw JSON. Explain biological meaning
 4. **Handle empty results gracefully** - Explain why and suggest alternatives
@@ -628,14 +628,19 @@ ${toolContext}` : ''}`,
               apiResult = { error: "Unknown function" };
           }
           accumulatedToolResults.push({ name, args, result: apiResult });
-          onLog?.(`✓ Tool result received: ${name}`);
-        } catch (e) {
-          console.error(e);
-          apiResult = { error: "Failed to fetch data from KG API." };
-          accumulatedToolResults.push({ name, args, result: apiResult });
-          onLog?.(`✗ Tool failed: ${name}`);
+        } catch (e: any) {
+          // Gracefully handle 404s as empty results
+          if (e.message && e.message.includes('404')) {
+             apiResult = []; // Treat as empty list
+             accumulatedToolResults.push({ name, args, result: apiResult });
+             onLog?.(`✓ Tool result received (No matches): ${name}`);
+          } else {
+             console.error(e);
+             apiResult = { error: "Failed to fetch data from KG API." };
+             accumulatedToolResults.push({ name, args, result: apiResult });
+             onLog?.(`✗ Tool failed: ${name}`);
+          }
         }
-
         functionResponseParts.push({
           functionResponse: {
             name: name,

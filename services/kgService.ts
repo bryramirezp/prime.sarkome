@@ -64,6 +64,18 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   }
 }
 
+// Helper to handle 404s gracefully (return default value instead of throwing)
+async function fetchAPIOrDefault<T>(endpoint: string, defaultValue: T, options: RequestInit = {}): Promise<T> {
+  try {
+    return await fetchAPI<T>(endpoint, options);
+  } catch (error: any) {
+    if (error.message && error.message.includes('404')) {
+      return defaultValue;
+    }
+    throw error;
+  }
+}
+
 export const kgService = {
   getHealth: (signal?: AbortSignal) => fetchAPI<{ status: string }>('/health', { signal }),
 
@@ -81,19 +93,52 @@ export const kgService = {
 
   getShortestPath: (source: string, target: string, signal?: AbortSignal) => fetchAPI<GraphData>(`/path/${encodeURIComponent(source)}/${encodeURIComponent(target)}?max_depth=3`, { signal }),
 
-  getDrugRepurposing: (disease: string, signal?: AbortSignal) => fetchAPI<DrugRepurposingResponse>(`/hypothesis/repurposing/${encodeURIComponent(disease)}`, { signal }),
+  getDrugRepurposing: (disease: string, signal?: AbortSignal) => 
+    fetchAPIOrDefault<DrugRepurposingResponse>(
+      `/hypothesis/repurposing/${encodeURIComponent(disease)}`, 
+      // @ts-ignore - aligning with backend list response or frontend object expectations dynamically
+      [] as any, 
+      { signal }
+    ),
 
-  getTherapeuticTargets: (disease: string, signal?: AbortSignal) => fetchAPI<TherapeuticTargetsResponse>(`/hypothesis/targets/${encodeURIComponent(disease)}`, { signal }),
+  getTherapeuticTargets: (disease: string, signal?: AbortSignal) => 
+    fetchAPIOrDefault<TherapeuticTargetsResponse>(
+      `/hypothesis/targets/${encodeURIComponent(disease)}`, 
+      // @ts-ignore
+      [] as any,
+      { signal }
+    ),
 
-  getDrugCombinations: (drug: string, signal?: AbortSignal) => fetchAPI<DrugCombinationsResponse>(`/hypothesis/combinations/${encodeURIComponent(drug)}`, { signal }),
+  getDrugCombinations: (drug: string, signal?: AbortSignal) => 
+    fetchAPIOrDefault<DrugCombinationsResponse>(
+      `/hypothesis/combinations/${encodeURIComponent(drug)}`, 
+      // @ts-ignore
+      [] as any,
+      { signal }
+    ),
 
-  getDrugMechanism: (drug: string, disease: string, signal?: AbortSignal) => fetchAPI<GraphData>(`/hypothesis/mechanisms/${encodeURIComponent(drug)}/${encodeURIComponent(disease)}`, { signal }),
+  getDrugMechanism: (drug: string, disease: string, signal?: AbortSignal) => 
+    fetchAPIOrDefault<GraphData>(
+      `/hypothesis/mechanisms/${encodeURIComponent(drug)}/${encodeURIComponent(disease)}`, 
+      { nodes: [], edges: [] },
+      { signal }
+    ),
 
   getPhenotypeMatching: (disease: string, signal?: AbortSignal) =>
-    fetchAPI<PhenotypeMatchingResponse>(`/hypothesis/phenotypes/${encodeURIComponent(disease)}`, { signal }),
+    fetchAPIOrDefault<PhenotypeMatchingResponse>(
+      `/hypothesis/phenotypes/${encodeURIComponent(disease)}`, 
+      // @ts-ignore
+      [] as any,
+      { signal }
+    ),
 
   getEnvironmentalRisks: (disease: string, signal?: AbortSignal) =>
-    fetchAPI<EnvironmentalRiskResponse>(`/risk/environmental/${encodeURIComponent(disease)}`, { signal }),
+    fetchAPIOrDefault<EnvironmentalRiskResponse>(
+      `/risk/environmental/${encodeURIComponent(disease)}`, 
+      // @ts-ignore
+      [] as any,
+      { signal }
+    ),
 
   getContext: (signal?: AbortSignal) => fetchAPI<any>('/context', { signal }),
 

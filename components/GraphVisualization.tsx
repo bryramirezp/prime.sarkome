@@ -633,7 +633,11 @@ const GraphVisualization = React.memo(function GraphVisualization({
 
             {/* Legend Overlay */}
             <div className={`absolute bottom-4 left-4 z-10 flex flex-wrap gap-2 p-3 rounded-xl max-w-[90%] md:max-w-[70%] text-xs border backdrop-blur-md shadow-lg bg-surface/90 border-border`}>
-                {Array.from(new Set(data.nodes.map(n => n.type))).sort().slice(0, 8).map(type => (
+                {Array.from(new Set(data.nodes.map(n => n.type ? (n.type.charAt(0).toUpperCase() + n.type.slice(1).toLowerCase()) : 'Unknown')))
+                    .filter(t => t !== 'Unknown' && t !== 'unknown')
+                    .sort()
+                    .slice(0, 8)
+                    .map(type => (
                     <div key={type} className="flex items-center gap-1.5">
                         <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: getNodeColor(type) }} />
                         <span className={`font-medium text-muted-foreground`}>
