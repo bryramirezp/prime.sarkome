@@ -125,7 +125,7 @@ const ONTOLOGIES = ["Mondo", "HPO", "Gene Ontology", "UBERON", "Disease Ontology
 
 export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
   return (
-    <div className={`min-h-screen flex ${darkMode ? 'bg-zinc-950 text-slate-200' : 'bg-slate-50 text-slate-900'}`}>
+    <div className="min-h-screen flex bg-background text-foreground">
 
       {/* Docs Sidebar */}
       <DocsSidebar darkMode={darkMode} />
@@ -141,7 +141,7 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <img alt="cow" className="w-8 h-8 brightness-110 contrast-125 hue-rotate-[280deg]" src="https://em-content.zobj.net/source/twitter/376/cow-face_1f42e.png" />
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
                   PrimeKG Knowledge Graph
                 </h1>
                 <p className="text-xs sm:text-sm md:text-base text-secondary mt-2 leading-relaxed">
@@ -180,21 +180,21 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-blue-400">analytics</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary">Graph Scale</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Graph Scale</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 <div className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500/10 to-indigo-500/5 border border-indigo-500/20 hover:border-indigo-500/40 transition-all hover-lift">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 font-mono">129,262</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 font-mono">129,262</div>
                   <div className="text-xs sm:text-sm font-medium text-indigo-400 uppercase tracking-wide">Total Nodes</div>
                   <div className="text-[10px] sm:text-xs text-tertiary mt-1 sm:mt-2">Biological entities across 10 categories</div>
                 </div>
                 <div className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 hover:border-purple-500/40 transition-all hover-lift">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 font-mono">8.1M</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 font-mono">8.1M</div>
                   <div className="text-xs sm:text-sm font-medium text-purple-400 uppercase tracking-wide">Relationships</div>
                   <div className="text-[10px] sm:text-xs text-tertiary mt-1 sm:mt-2">30 different edge types</div>
                 </div>
                 <div className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all hover-lift sm:col-span-2 md:col-span-1">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 font-mono">99.99%</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 font-mono">99.99%</div>
                   <div className="text-xs sm:text-sm font-medium text-emerald-400 uppercase tracking-wide">Connected</div>
                   <div className="text-[10px] sm:text-xs text-tertiary mt-1 sm:mt-2">Giant connected component</div>
                 </div>
@@ -207,7 +207,7 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-purple-400">category</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary">Biological Node Types</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Biological Node Types</h2>
                 <span className="px-2 py-0.5 text-[10px] font-medium text-purple-400 bg-purple-500/10 rounded-full">10 Categories</span>
               </div>
               <div className="rounded-xl sm:rounded-2xl border border-border overflow-x-auto bg-surface/30">
@@ -225,11 +225,11 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                         <td className="px-3 sm:px-5 py-2.5 sm:py-3.5">
                           <div className="flex items-center gap-2 sm:gap-3">
                             <div className={`w-2 h-2 rounded-full bg-${row.color}-400 flex-shrink-0`}></div>
-                            <span className="font-medium text-primary text-xs sm:text-sm">{row.type}</span>
+                            <span className="font-medium text-foreground text-xs sm:text-sm">{row.type}</span>
                           </div>
                         </td>
                         <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right">
-                          <span className="font-mono text-primary text-xs sm:text-sm">{row.count}</span>
+                          <span className="font-mono text-foreground text-xs sm:text-sm">{row.count}</span>
                         </td>
                         <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-tertiary text-xs hidden md:table-cell">{row.source}</td>
                       </tr>
@@ -245,19 +245,19 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-pink-400">psychology</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary">Semantic Retrieval</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Semantic Retrieval</h2>
                 <span className="px-2 py-0.5 text-[10px] font-medium text-pink-400 bg-pink-500/10 rounded-full">AI-Powered</span>
               </div>
               <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-gradient-to-br from-surface/50 to-transparent">
                 <p className="text-secondary text-sm sm:text-base leading-relaxed mb-4 sm:mb-6">
-                  PrimeAI uses <strong className="text-primary">Google Gemini Embeddings</strong> to enable semantic search across the entire knowledge graph.
+                  PrimeAI uses <strong className="text-foreground">Google Gemini Embeddings</strong> to enable semantic search across the entire knowledge graph.
                   Instead of keyword matching, embeddings capture the semantic meaning of biomedical concepts in high-dimensional vector space.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="p-4 sm:p-5 rounded-xl bg-surface/50 border border-border">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-blue-400">search</span>
-                      <h4 className="font-semibold text-primary text-sm">How It Works</h4>
+                      <h4 className="font-semibold text-foreground text-sm">How It Works</h4>
                     </div>
                     <ul className="space-y-2 text-xs sm:text-sm text-secondary">
                       <li className="flex items-start gap-2">
@@ -277,7 +277,7 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                   <div className="p-4 sm:p-5 rounded-xl bg-surface/50 border border-border">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-emerald-400">check_circle</span>
-                      <h4 className="font-semibold text-primary text-sm">Key Benefits</h4>
+                      <h4 className="font-semibold text-foreground text-sm">Key Benefits</h4>
                     </div>
                     <ul className="space-y-2 text-xs sm:text-sm text-secondary">
                       <li className="flex items-start gap-2">
@@ -309,7 +309,7 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-orange-400">share</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary">Relationship Types</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Relationship Types</h2>
                 <span className="px-2 py-0.5 text-[10px] font-medium text-orange-400 bg-orange-500/10 rounded-full">30 Edge Types</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -322,7 +322,7 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                       }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] sm:text-xs font-medium text-primary truncate">{edge.name}</div>
+                      <div className="text-[10px] sm:text-xs font-medium text-foreground truncate">{edge.name}</div>
                       {edge.desc && <div className="text-[9px] sm:text-[10px] text-tertiary">{edge.desc}</div>}
                     </div>
                     <div className="font-mono text-[10px] sm:text-xs text-secondary pl-2 sm:pl-3 flex-shrink-0">{edge.count}</div>
@@ -337,38 +337,38 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-emerald-400">database</span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary">Data Sources</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">Data Sources</h2>
                 <span className="px-2 py-0.5 text-[10px] font-medium text-emerald-400 bg-emerald-500/10 rounded-full">20 Gold-Standard</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-surface/30 border border-border">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-red-400">medication</span>
-                    <h3 className="font-semibold text-primary text-sm sm:text-base">Clinical & Drugs</h3>
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Clinical & Drugs</h3>
                   </div>
                   <ul className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-secondary">
                     <li>
-                      <a href="https://go.drugbank.com/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://go.drugbank.com/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         DrugBank
                       </a> — Drugs, pharmacology, targets
                     </li>
                     <li>
-                      <a href="https://drugcentral.org/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://drugcentral.org/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         Drug Central
                       </a> — Indications, contraindications
                     </li>
                     <li>
-                      <a href="https://www.mayoclinic.org/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://www.mayoclinic.org/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         Mayo Clinic
                       </a> — Clinical descriptions
                     </li>
                     <li>
-                      <a href="https://www.orpha.net/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://www.orpha.net/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         Orphanet
                       </a> — Rare diseases
                     </li>
                     <li>
-                      <a href="http://sideeffects.embl.de/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="http://sideeffects.embl.de/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         SIDER
                       </a> — Side effects (ADRs)
                     </li>
@@ -377,26 +377,26 @@ export default function PrimeKGPage({ darkMode }: PrimeKGPageProps) {
                 <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-surface/30 border border-border">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-blue-400">genetics</span>
-                    <h3 className="font-semibold text-primary text-sm sm:text-base">Genomics & Proteomics</h3>
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Genomics & Proteomics</h3>
                   </div>
                   <ul className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-secondary">
                     <li>
-                      <a href="https://www.disgenet.org/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://www.disgenet.org/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         DisGeNET
                       </a> — Gene-disease associations
                     </li>
                     <li>
-                      <a href="https://www.ncbi.nlm.nih.gov/gene" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://www.ncbi.nlm.nih.gov/gene" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         Entrez Gene
                       </a> — Gene information (NCBI)
                     </li>
                     <li>
-                      <a href="https://www.bgee.org/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:text-accent transition-colors">
+                      <a href="https://www.bgee.org/" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">
                         Bgee
                       </a> — Gene expression patterns
                     </li>
                     <li>
-                      <span className="text-primary font-medium">PPI Networks</span> —
+                      <span className="text-foreground font-medium">PPI Networks</span> —
                       <a href="https://thebiogrid.org/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">BioGRID</a>,
                       <a href="https://string-db.org/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">STRING</a>,
                       <a href="http://www.interactome-atlas.org/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">HuRI</a>

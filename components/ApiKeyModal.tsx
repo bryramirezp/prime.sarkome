@@ -58,6 +58,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
       setStoredApiKey(apiKey.trim());
       onSave(apiKey.trim());
       onClose();
+      window.location.reload();
     }
   };
 
@@ -67,6 +68,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
     setHasExistingKey(false);
     onSave('');
     onClose();
+    window.location.reload();
   };
 
   if (!isOpen) return null;
@@ -77,7 +79,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
         onClick={onClose}
     >
       <div 
-        className={`rounded-2xl shadow-2xl border w-full max-w-lg overflow-hidden animate-scale-in bg-surface border-border`}
+        className={`rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in bg-surface border-border`}
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -144,7 +146,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
-                className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent text-sm font-mono bg-[rgb(var(--color-input-bg))] border-[rgb(var(--color-input-border))] text-primary placeholder-tertiary`}
+                className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono bg-[rgb(var(--color-input-bg))] border-[rgb(var(--color-input-border))] text-foreground placeholder-tertiary`}
               />
               <button
                 type="button"
@@ -214,7 +216,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onSave, dark
             <button
               onClick={handleSave}
               disabled={!apiKey.trim()}
-              className={`px-5 py-2 text-sm font-medium rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 bg-accent hover:bg-accent-hover text-white`}
+              className={`px-5 py-2 text-sm font-medium rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 ${apiKey.trim() ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-surface-hover text-tertiary'} text-white`}
             >
               <i className="fas fa-save"></i>
               Save in my browser

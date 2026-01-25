@@ -96,8 +96,8 @@ export default function Sidebar({
 
   // Determine visibility classes
   const visibilityClass = mobileOpen
-    ? 'fixed inset-y-0 left-0 z-50 flex shadow-2xl animate-slide-in-left w-[280px]'
-    : (showOnDesktop ? 'hidden md:flex relative' : 'hidden md:hidden');
+    ? 'fixed inset-y-0 left-0 z-[100] flex shadow-2xl animate-slide-in-left w-[280px]'
+    : (showOnDesktop ? 'hidden md:flex relative' : 'hidden');
 
   // Logic: In mobile mode, Sidebar should ALWAYS be expanded (full width with text).
   // We only respect 'collapsed' prop on desktop mode (!mobileOpen).
@@ -108,12 +108,16 @@ export default function Sidebar({
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm animate-fade-in"
+          aria-hidden="true"
+          className="fixed inset-0 bg-black/60 z-[90] md:hidden backdrop-blur-sm animate-fade-in"
           onClick={onCloseMobile}
         />
       )}
 
-      <aside className={`flex-shrink-0 flex-col border-r border-border bg-[rgb(var(--color-bg-main))] md:bg-[rgb(var(--color-bg-main))]/50 backdrop-blur-xl transition-all duration-300 h-full text-secondary
+      <aside 
+        role={mobileOpen ? "dialog" : undefined}
+        aria-modal={mobileOpen ? "true" : undefined}
+        className={`flex-shrink-0 flex-col border-border bg-background md:bg-background/50 backdrop-blur-xl transition-all duration-300 h-full text-secondary overscroll-contain
         ${visibilityClass}
         ${isCollapsed ? 'w-[68px]' : 'w-[280px]'}
       `}>
@@ -126,7 +130,7 @@ export default function Sidebar({
               onCreateNew();
               if (onCloseMobile) onCloseMobile();
             }}
-            className={`w-full flex items-center gap-2 text-sm font-medium text-primary bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl transition-all duration-200 group hover-lift
+            className={`w-full flex items-center gap-2 text-sm font-medium text-foreground bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl transition-all duration-200 group hover-lift
               ${isCollapsed ? 'justify-center p-2.5' : 'justify-center px-4 py-2.5'}
             `}
             title={isCollapsed ? 'New Chat' : undefined}
@@ -140,13 +144,26 @@ export default function Sidebar({
             to="/graph"
             onClick={onCloseMobile}
             className={`w-full flex items-center gap-2 text-sm font-medium border rounded-xl transition-all duration-200 group hover-lift ${location.pathname === '/graph'
-              ? 'bg-cyan-500/20 border-cyan-500/40 text-primary'
+              ? 'bg-cyan-500/20 border-cyan-500/40 text-foreground'
               : 'text-secondary bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/20'
               } ${isCollapsed ? 'justify-center p-2.5' : 'justify-center px-4 py-2.5'}`}
             title={isCollapsed ? 'Graph Explorer' : undefined}
           >
             <span className="material-symbols-outlined text-[18px] text-cyan-400 group-hover:text-cyan-300 transition-colors">hub</span>
             {!isCollapsed && <span>Graph Explorer</span>}
+          </Link>
+
+          <Link
+            to="/hypothesis"
+            onClick={onCloseMobile}
+            className={`w-full flex items-center gap-2 text-sm font-medium border rounded-xl transition-all duration-200 group hover-lift ${location.pathname === '/hypothesis'
+              ? 'bg-indigo-500/20 border-indigo-500/40 text-foreground'
+              : 'text-secondary bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/20'
+              } ${isCollapsed ? 'justify-center p-2.5' : 'justify-center px-4 py-2.5'}`}
+            title={isCollapsed ? 'Hypothesis Hub' : undefined}
+          >
+            <span className="material-symbols-outlined text-[18px] text-indigo-400 group-hover:text-indigo-300 transition-colors">biotech</span>
+            {!isCollapsed && <span>Hypothesis Hub</span>}
           </Link>
         </div>
 
@@ -157,8 +174,8 @@ export default function Sidebar({
               <button
                 onClick={() => setActiveTab('sessions')}
                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${activeTab === 'sessions'
-                  ? 'bg-[rgb(var(--color-bg-main))] text-primary shadow-sm'
-                  : 'text-secondary hover:text-primary'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-secondary hover:text-foreground'
                   }`}
               >
                 <span className="flex items-center justify-center gap-1.5">
@@ -169,8 +186,8 @@ export default function Sidebar({
               <button
                 onClick={() => setActiveTab('projects')}
                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${activeTab === 'projects'
-                  ? 'bg-[rgb(var(--color-bg-main))] text-primary shadow-sm'
-                  : 'text-secondary hover:text-primary'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-secondary hover:text-foreground'
                   }`}
               >
                 <span className="flex items-center justify-center gap-1.5">
@@ -184,7 +201,7 @@ export default function Sidebar({
 
         {/* Session List - hidden when collapsed or when Projects tab is active */}
         {!isCollapsed && activeTab === 'sessions' && (
-          <div className="flex-1 overflow-y-auto px-3 space-y-1 no-scrollbar">
+          <div className="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent">
             {sessions.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <span className="material-symbols-outlined text-[32px] text-tertiary/50 mb-2">forum</span>
@@ -210,10 +227,10 @@ export default function Sidebar({
                   }}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-3 cursor-pointer ${session.pinned
                     ? currentSessionId === session.id
-                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-primary shadow-sm'
+                      ? 'bg-foreground text-background shadow-md border-transparent'
                       : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-secondary'
                     : currentSessionId === session.id
-                      ? 'bg-surface shadow-sm border border-border text-primary'
+                      ? 'bg-foreground text-background shadow-md border-transparent'
                       : 'hover:bg-surface-hover/50 text-tertiary hover:text-primary'
                     }`}
                 >
@@ -265,9 +282,8 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* Dropdown Menu */}
                 {openMenu === session.id && !isCollapsed && (
-                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
+                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-background border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -323,10 +339,10 @@ export default function Sidebar({
                   }}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-3 cursor-pointer ${session.pinned
                     ? currentSessionId === session.id
-                      ? 'bg-amber-500/10 border-2 border-amber-500/40 text-primary shadow-sm'
+                      ? 'bg-foreground text-background shadow-md border-transparent'
                       : 'bg-amber-500/5 border border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/40 text-secondary'
                     : currentSessionId === session.id
-                      ? 'bg-surface shadow-sm border border-border text-primary'
+                      ? 'bg-foreground text-background shadow-md border-transparent'
                       : 'hover:bg-surface-hover/50 text-tertiary hover:text-primary'
                     }`}
                 >
@@ -359,9 +375,8 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* Dropdown Menu (Duplicate logic, ideally componentize) */}
                 {openMenu === session.id && !isCollapsed && (
-                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
+                  <div ref={menuRef} className="absolute right-2 top-8 w-40 bg-background border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in p-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

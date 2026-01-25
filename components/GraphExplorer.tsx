@@ -8,15 +8,52 @@ import { GraphData, GeminiModel } from '../types';
 import { generateResponse } from '../services/geminiService';
 import { useApiKey } from '../contexts/ApiKeyContext';
 
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { LayoutContext } from './Layout';
+
 interface GraphExplorerProps {
     darkMode: boolean;
 }
 
+const typeColors: Record<string, string> = {
+    geneprotein: 'text-emerald-500',
+    drug: 'text-blue-500',
+    disease: 'text-red-500',
+    phenotype: 'text-orange-500',
+    pathway: 'text-pink-500',
+    biologicalprocess: 'text-cyan-500',
+    molecularfunction: 'text-violet-500',
+    cellularcomponent: 'text-teal-500',
+    anatomy: 'text-yellow-500',
+    exposure: 'text-indigo-500',
+    unknown: 'text-slate-500'
+};
+
+const getHighlightColor = (type: string) => {
+    const key = type.toLowerCase().replace(/[\/\s\_-]/g, '');
+    return typeColors[key] || typeColors.unknown;
+};
+
 const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
-    const { apiKey } = useApiKey();
+    const { apiKey, isValid } = useApiKey();
+    const { onShowApiKeyModal } = useOutletContext<LayoutContext>();
     const [entity, setEntity] = useState('');
-    const [hops, setHops] = useState(1);
-    const [limit, setLimit] = useState(50);
+    const [hops, setHops] = useState(() => {
+        const saved = localStorage.getItem('primekg_graph_hops');
+        return saved ? Number(saved) : 1;
+    });
+    const [limit, setLimit] = useState(() => {
+        const saved = localStorage.getItem('primekg_graph_limit');
+        return saved ? Number(saved) : 50;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('primekg_graph_hops', String(hops));
+    }, [hops]);
+
+    useEffect(() => {
+        localStorage.setItem('primekg_graph_limit', String(limit));
+    }, [limit]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [graphData, setGraphData] = useState<GraphData | null>(null);
@@ -31,7 +68,38 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
     const [quickCoordinates, setQuickCoordinates] = useState<string[]>(['Pembrolizumab', 'PCSK9', 'CRISPR', 'Semaglutide']);
     const [isGeneratingCoords, setIsGeneratingCoords] = useState(false);
 
+    // Search Suggestions
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Debounced Search Logic
+    useEffect(() => {
+        if (entity.trim().length < 2) {
+            setSuggestions([]);
+            return;
+        }
+
+        const handler = setTimeout(async () => {
+            try {
+                const results = await kgService.searchSemantic(entity);
+                setSuggestions(results.slice(0, 5));
+            } catch (err) {
+                console.error("Suggestion fetch failed", err);
+            }
+        }, 500);
+
+        return () => clearTimeout(handler);
+    }, [entity]);
+
+    // Path Finding State
+    const [pathSource, setPathSource] = useState<any | null>(null);
+    const [highlightedEdges, setHighlightedEdges] = useState<Set<string>>(new Set());
+
     const generateCoordinates = async () => {
+        if (!isValid) {
+            onShowApiKeyModal();
+            return;
+        }
         setIsGeneratingCoords(true);
         try {
             const prompt = `Generate 4 distinct, interesting biomedical entities (Gene, Drug, or Disease) relevant to precision medicine in 2026. 
@@ -124,6 +192,9 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                 // Proceed with original input
             }
 
+            // Persist the scan depth preference on execution
+            localStorage.setItem('primekg_graph_hops', String(hops));
+
             const data = await kgService.getSubgraph(targetEntity, hops, limit);
 
             if (!data.nodes || data.nodes.length === 0) {
@@ -149,7 +220,8 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
             const nodes = data.nodes.map((n: any) => ({
                 id: n.name || n.id || n.db_id,
                 name: n.name || n.node_name || n.id,
-                type: n.type || n.node_type || 'unknown'
+                type: n.type || n.node_type || 'unknown',
+                description: n.description || ''
             }));
 
             const edges = (data.edges || []).map((e: any) => ({
@@ -185,6 +257,113 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
         }
     }, [entity, hops, limit, darkMode]);
 
+    // Expand Node (Add neighbors to current graph)
+    const handleExpandNode = async (node: any) => {
+        setIsLoading(true);
+        try {
+            const data = await kgService.getNeighbors(node.id);
+            if (!data.nodes || data.nodes.length === 0) {
+                toast.error("No further connections found for this entity.");
+                return;
+            }
+
+            setGraphData(prev => {
+                if (!prev) return { nodes: data.nodes, edges: data.edges };
+                
+                const existingNodeIds = new Set(prev.nodes.map(n => n.id));
+                const newNodes = data.nodes.filter(n => !existingNodeIds.has(n.name || n.id || n.db_id)).map(n => ({
+                    id: n.name || n.id || n.db_id,
+                    name: n.name || n.node_name || n.id,
+                    type: n.type || n.node_type || 'unknown',
+                    description: n.description || ''
+                }));
+
+                // Avoid duplicate edges
+                const existingEdgeKeys = new Set(prev.edges.map(e => `${e.source}-${e.target}-${e.relation}`));
+                const newEdges = (data.edges || []).filter(e => {
+                    const key = `${e.source}-${e.target}-${e.relation}`;
+                    return !existingEdgeKeys.has(key);
+                });
+
+                return {
+                    nodes: [...prev.nodes, ...newNodes],
+                    edges: [...prev.edges, ...newEdges]
+                };
+            });
+            
+            toast.success(`Network expanded: +${data.nodes.length} nodes`);
+        } catch (err) {
+            console.error("Expand error:", err);
+            toast.error("Failed to expand network.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFindPath = async (source: string, target: string) => {
+        setIsLoading(true);
+        setError(null);
+        setHighlightedEdges(new Set());
+        try {
+            const data = await kgService.getShortestPath(source, target);
+            if (!data.nodes || data.nodes.length === 0) {
+                toast.error(`No paths found between ${source} and ${target}.`);
+                return;
+            }
+
+            // Merge path nodes into graph if not already there
+            setGraphData(prev => {
+                const existingNodes = prev?.nodes || [];
+                const existingEdges = prev?.edges || [];
+                const existingNodeIds = new Set(existingNodes.map(n => n.id));
+                const existingEdgeKeys = new Set(existingEdges.map(e => `${e.source}-${e.target}-${e.relation}`));
+
+                const newNodes = data.nodes.filter(n => !existingNodeIds.has(n.name || n.id || n.db_id)).map(n => ({
+                    id: n.name || n.id || n.db_id,
+                    name: n.name || n.node_name || n.id,
+                    type: n.type || n.node_type || 'unknown',
+                    description: n.description || ''
+                }));
+
+                const newEdges = data.edges.filter(e => {
+                    const key = `${e.source}-${e.target}-${e.relation}`;
+                    return !existingEdgeKeys.has(key);
+                });
+
+                // Set highlighted edges
+                const pathKeys = new Set(data.edges.map(e => `${e.source}-${e.target}-${e.relation}`));
+                setHighlightedEdges(pathKeys);
+
+                return {
+                    nodes: [...existingNodes, ...newNodes],
+                    edges: [...existingEdges, ...newEdges]
+                };
+            });
+
+            toast.success(`Path resolved: ${data.nodes.length} nodes in sequence`);
+            setPathSource(null);
+        } catch (err) {
+            console.error("Path error:", err);
+            const errMsg = err instanceof Error ? err.message : String(err);
+            
+            // Check if it's a "No path found" 404 error from the backend
+            if (errMsg.includes('404') || errMsg.toLowerCase().includes('no path found')) {
+                toast(`No biological path found between these entities within the search limit.`, {
+                    icon: '🔍',
+                    style: {
+                        background: darkMode ? '#27272a' : '#fff',
+                        color: darkMode ? '#f4f4f5' : '#3f3f46',
+                        border: '1px solid rgba(168, 85, 247, 0.4)'
+                    }
+                });
+            } else {
+                toast.error("Failed to resolve biological path.");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Handle Node Click - Open Inspector
     const handleNodeClick = (node: any) => {
         setSelectedNode(node);
@@ -192,6 +371,10 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
     };
 
     const analyzeNode = async (node: any, context: string = 'general') => {
+        if (!isValid) {
+            onShowApiKeyModal();
+            return;
+        }
         setIsAnalyzing(true);
         try {
             let prompt = "";
@@ -281,9 +464,9 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                 Network Navigator
                             </h2>
                         </div>
-                        <h1 className={`text-xl font-bold text-primary`}>
+                        <h2 className="text-xl font-bold text-foreground">
                             Bio-Cartography
-                        </h1>
+                        </h2>
                     </div>
 
                     <div className="p-6 flex-1 overflow-y-auto space-y-6">
@@ -293,7 +476,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                 Target Entity Coordinates
                             </label>
                             <div className="relative group">
-                                <span className={`absolute left-3 top-3 text-[18px] transition-colors ${darkMode ? 'text-slate-500 group-focus-within:text-indigo-400' : 'text-slate-400 group-focus-within:text-indigo-600'}`}>
+                                <span className="absolute left-3 top-3 text-[18px] transition-colors text-muted-foreground group-focus-within:text-indigo-500">
                                     ©
                                 </span>
                                 <input
@@ -301,16 +484,46 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                     value={entity}
                                     onChange={(e) => setEntity(e.target.value)}
                                     onKeyDown={handleKeyDown}
+                                    onFocus={() => setShowSuggestions(true)}
                                     placeholder="Enter Gene, Drug, Disease, or describe a concept..."
                                     className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm font-mono transition-all outline-none focus:ring-2 focus:ring-indigo-500/50 bg-[rgb(var(--color-input-bg))] border-[rgb(var(--color-input-border))] text-primary placeholder-tertiary shadow-inner`}
                                 />
+                                
+                                {/* Suggestions Menu */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                        {suggestions.map((s, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => {
+                                                    setEntity(s.name);
+                                                    setShowSuggestions(false);
+                                                    handleVisualize(s.name);
+                                                }}
+                                                className="w-full text-left px-4 py-3 hover:bg-indigo-500/10 flex flex-col gap-0.5 border-b border-border/50 last:border-0"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-bold text-primary">{s.name}</span>
+                                                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${getHighlightColor(s.type)} bg-current/10`}>
+                                                        {s.type}
+                                                    </span>
+                                                </div>
+                                                {s.description && (
+                                                    <p className="text-[10px] text-tertiary truncate italic opacity-70">
+                                                        {s.description}
+                                                    </p>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Sliders / Selectors */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className={`block text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                                     Scan Depth
                                 </label>
                                 <select
@@ -325,7 +538,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className={`block text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                                     Resolution
                                 </label>
                                 <select
@@ -379,7 +592,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                 <button 
                                     onClick={generateCoordinates}
                                     disabled={isGeneratingCoords}
-                                    className={`p-1 rounded hover:bg-indigo-500/10 transition-colors ${isGeneratingCoords ? 'animate-spin text-indigo-500' : 'text-slate-400 hover:text-indigo-400'}`}
+                                    className={`p-1 rounded hover:bg-indigo-500/10 transition-colors ${isGeneratingCoords ? 'animate-spin text-indigo-500' : 'text-muted-foreground hover:text-indigo-500'}`}
                                     title="Generate new coordinates with Gemini 2.0"
                                 >
                                     <span className="material-symbols-outlined text-[14px]">refresh</span>
@@ -422,6 +635,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                 data={graphData}
                                 onNodeClick={handleNodeClick}
                                 selectedNodeId={selectedNode?.id}
+                                highlightedEdges={highlightedEdges}
                             >
                                 {/* HUD Overlay Info */}
                                 <div className={`absolute top-4 left-4 z-20 px-4 py-2 rounded-full border backdrop-blur-sm pointer-events-none animate-in fade-in slide-in-from-top-4 bg-surface/80 border-indigo-500/30 text-primary`}>
@@ -440,12 +654,18 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                         <div className="p-4 border-b border-indigo-500/10 bg-gradient-to-r from-indigo-500/10 to-transparent">
                                             <div className="flex items-start justify-between">
                                                 <div>
-                                                    <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 text-indigo-500`}>
+                                                    <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${getHighlightColor(selectedNode.type)} flex items-center gap-1`}>
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
                                                         {selectedNode.type}
                                                     </div>
                                                     <h3 className={`text-xl font-bold text-primary`}>
                                                         {selectedNode.name}
                                                     </h3>
+                                                    {selectedNode.description && (
+                                                        <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2 italic">
+                                                            {selectedNode.description}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <button 
                                                     onClick={() => setSelectedNode(null)}
@@ -464,7 +684,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                                     <span className="text-xs font-mono text-indigo-400">Analyzing Bio-Data...</span>
                                                 </div>
                                             ) : analysisCache[selectedNode.id] ? (
-                                                <div className={`prose prose-sm prose-invert max-w-none text-secondary`}>
+                                                <div className={`prose prose-sm prose-invert max-w-none text-muted-foreground`}>
                                                     <ReactMarkdown 
                                                         remarkPlugins={[remarkGfm]}
                                                         components={{
@@ -543,7 +763,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                                         // This helps avoid 404s when the graph node name differs strictly from the search index
                                                         const cleanName = selectedNode.name.replace(/\s*\([^)]+\)$/, '');
                                                         setEntity(cleanName);
-                                                        setHops(1); // Reset to local view for focused exploration
+                                                        // Do not reset hops; keep user preference
                                                         handleVisualize(cleanName); // Trigger scan immediately with cleaned name
                                                     }}
                                                     className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
@@ -551,11 +771,42 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                                     <span className="material-symbols-outlined text-[16px]">center_focus_strong</span>
                                                     Focus Map Here
                                                 </button>
+                                                <button 
+                                                    onClick={() => handleExpandNode(selectedNode)}
+                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10`}
+                                                >
+                                                    <span className="material-symbols-outlined text-[16px]">dynamic_feed</span>
+                                                    Expand Connections
+                                                </button>
+                                                <button 
+                                                    onClick={() => {
+                                                        if (pathSource) {
+                                                            handleFindPath(pathSource.name, selectedNode.name);
+                                                        } else {
+                                                            setPathSource(selectedNode);
+                                                            toast(`Source locked: ${selectedNode.name}. Select target node.`, { icon: '📍' });
+                                                        }
+                                                    }}
+                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${pathSource ? 'bg-amber-500 text-white border-amber-400' : 'border-border text-muted-foreground hover:bg-surface-hover'}`}
+                                                >
+                                                    <span className="material-symbols-outlined text-[16px]">
+                                                        {pathSource ? 'route' : 'location_searching'}
+                                                    </span>
+                                                    {pathSource ? `To ${selectedNode.name}` : 'Set as Path Source'}
+                                                </button>
+                                                {pathSource && (
+                                                    <button 
+                                                        onClick={() => setPathSource(null)}
+                                                        className="w-full text-[10px] text-red-400 hover:text-red-500 font-bold uppercase tracking-tighter"
+                                                    >
+                                                        Cancel Path Selection
+                                                    </button>
+                                                )}
                                                 <a 
                                                     href={`https://pubmed.ncbi.nlm.nih.gov/?term=${selectedNode.name}`}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-border hover:bg-surface-hover text-secondary`}
+                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-border hover:bg-surface-hover text-muted-foreground`}
                                                 >
                                                     <span className="material-symbols-outlined text-[16px]">menu_book</span>
                                                     Open PubMed

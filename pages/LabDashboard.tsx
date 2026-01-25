@@ -1,116 +1,163 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 
-const modules = [
-  {
-    id: 'molecular-detective',
-    title: 'Molecular Detective',
-    description: 'AI-powered reasoning and semantic exploration of the knowledge graph.',
-    icon: (
-      <svg className="w-8 h-8 text-cyan-600 dark:text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 4v.01" />
-      </svg>
-    ),
-    path: '/chat',
-    color: 'from-cyan-500/20 to-blue-500/20',
-    borderColor: 'border-cyan-500/30'
-  },
-  {
-    id: 'network-navigator',
-    title: 'Network Navigator',
-    description: 'Relational visualization of deep biological networks and subgraphs.',
-    icon: (
-      <svg className="w-8 h-8 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3" />
-        <circle cx="19" cy="5" r="2" />
-        <circle cx="5" cy="19" r="2" />
-        <path d="M17 7l-3 3M7 17l3-3" />
-      </svg>
-    ),
-    path: '/graph',
-    color: 'from-emerald-500/20 to-teal-500/20',
-    borderColor: 'border-emerald-500/30'
-  },
-  {
-    id: 'hypothesis-simulator',
-    title: 'Hypothesis Lab',
-    description: 'Gamified discovery mode. Validate new drug-disease connections.',
-    icon: (
-      <svg className="w-8 h-8 text-amber-600 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.634.317a2 2 0 01-.894.212H9M9 15.5V7a2 2 0 012-2h3.9a2 2 0 011.69.94l.692 1.2a2 2 0 001.69.94H21a2 2 0 012 2v1.5a2 2 0 01-2 2h-2m-12-7V4" />
-      </svg>
-    ),
-    path: '/game',
-    color: 'from-amber-500/20 to-orange-500/20',
-    borderColor: 'border-amber-500/30'
-  },
-  {
-    id: 'archive-access',
-    title: 'Archive Access',
-    description: 'Direct PubMed / Europe PMC integration for literature grounding.',
-    icon: (
-      <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    ),
-    path: '/docs',
-    color: 'from-purple-500/20 to-fuchsia-500/20',
-    borderColor: 'border-purple-500/30'
-  }
-];
+
+import React from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
+import { Shield, Share2, Dna, BookOpen, MessageSquareText, FlaskConical } from 'lucide-react';
+import { useApiKey } from '../contexts/ApiKeyContext';
+import { LayoutContext } from '../components/Layout';
+import TechFooter from '../components/TechFooter';
 
 export default function LabDashboard() {
+  const { isValid } = useApiKey();
+  const { onShowApiKeyModal } = useOutletContext<LayoutContext>();
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <header className="mb-12">
-        <h1 className="text-4xl font-extrabold text-primary mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-cyan-600 dark:from-indigo-400 dark:to-cyan-400">
-          PrimeKG Bio-Command Center
-        </h1>
-        <p className="text-secondary max-w-2xl leading-relaxed">
-          Welcome back, Researcher. Your secure session is active. Choose a laboratory module to begin your precision medicine discovery.
-        </p>
-      </header>
+    <div className="min-h-full w-full flex flex-col font-sans text-muted-foreground relative bg-background">
+      
+      <main className="flex-grow flex flex-col items-center justify-start pt-16 pb-12 relative w-full max-w-5xl mx-auto px-4 z-10">
+        
+        {/* Simple Title - Optional, if you want totally blank remove this block */}
+        <div className="text-center z-10 mb-6 sm:mb-8">
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-foreground mb-2 tracking-tight">
+            PrimeKG Bio-Lab
+          </h1>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {modules.map((module) => (
-          <Link
-            key={module.id}
-            to={module.path}
-            className={`group p-8 bg-surface border border-border rounded-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden shadow-xl hover:shadow-2xl`}
-          >
-            {/* Background Gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+        {/* Status Badge - Moved to top */}
+        <div className="mb-8 z-10">
+          <div className="inline-flex items-center gap-2 backdrop-blur-md px-4 py-2 rounded-full border shadow-sm transition-colors bg-card/80 border-border">
             
-            <div className="relative z-10">
-              <div className="mb-6 p-3 bg-surface-hover/50 rounded-xl inline-block group-hover:scale-110 transition-transform shadow-inner">
-                {module.icon}
-              </div>
-              <h3 className="text-2xl font-bold text-primary mb-3 flex items-center gap-2">
-                {module.title}
-                <svg className="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </h3>
-              <p className="text-secondary leading-relaxed">
-                {module.description}
-              </p>
+            {/* Graph Status - Always Connected */}
+            <div className="flex items-center gap-2 pr-3 border-r border-border">
+              <span className="text-xs font-bold text-foreground tracking-wider">GRAPH</span>
+               <span className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Online</span>
             </div>
-          </Link>
-        ))}
-      </div>
 
-      <div className="mt-12 p-6 bg-surface/50 border border-border rounded-2xl flex items-center justify-between">
-        <div>
-          <h4 className="text-accent font-semibold mb-1 uppercase tracking-widest text-xs">Research Status</h4>
-          <p className="text-tertiary text-sm">All systems nominal. High-precision grounding active via Gemini Flash.</p>
+            {/* AI Status - Depends on Key */}
+            <div className="flex items-center gap-2 pl-1">
+               <span className="text-xs font-bold text-foreground tracking-wider">AI AGENT</span>
+               {isValid ? (
+                 <span className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Ready</span>
+               ) : (
+                  <button
+                  onClick={onShowApiKeyModal}
+                  className="hover:bg-orange-100 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold px-2 py-0.5 rounded transition-colors ml-1 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800"
+                >
+                  Connect Gemini
+                </button>
+               )}
+            </div>
+
+          </div>
         </div>
-        <div className="flex gap-4">
-            <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs rounded-full border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              API Connected
-            </span>
+
+        {/* 2x2 Grid Centered */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full max-w-4xl">
+          
+          {/* Card 1: Inference */}
+          <Link
+            to="/chat"
+             className={`group flex flex-col p-5 sm:p-8 bg-card border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98] ${
+              !isValid ? 'border-orange-200/50 dark:border-orange-900/30' : 'border-border'
+            }`}
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+                <MessageSquareText size={28} className="sm:w-8 sm:h-8" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-blue-600 transition-colors">
+                Hallucination-Free AI <br/>
+                <span className="text-sm font-normal text-muted-foreground group-hover:text-blue-500/80">via Graph Grounding</span>
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Standard LLMs predict probable words; we retrieve verified facts. Every answer is strictly constrained to nodes and edges within the PrimeKG Knowledge Graph, eliminating generative fabrication.
+            </p>
+             {!isValid && (
+              <div className="mt-4 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-3 py-2 rounded-md inline-block w-fit">
+                 ⚠️ AI Key Required for this feature
+              </div>
+            )}
+          </Link>
+
+          {/* Card 2: Navigator */}
+          <Link
+            to="/graph"
+            className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+               <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-lg">
+                <Share2 size={32} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-emerald-600 transition-colors">
+                Relational Navigator
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Visualize connections between drugs, diseases, and phenotypes.
+            </p>
+          </Link>
+
+          {/* Card 3: Experimental (formerly Hypothesis Simulator) */}
+          <Link
+            to="/HypothesisSimulator"
+             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="p-3 bg-pink-50 dark:bg-pink-900/20 text-pink-600 rounded-lg">
+                <FlaskConical size={32} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-pink-600 transition-colors">
+                Experimental
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Interactive games to validate biological connections. All hypotheses must be grounded in PrimeKG evidence.
+            </p>
+          </Link>
+
+          {/* Card 3.5: Molecular Simulator (New Duplicate) */}
+          <Link
+            to="/molecular"
+             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg">
+                <Dna size={32} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-red-600 transition-colors">
+                Molecular Simulator
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Explore mechanistic pathways and molecular interactions in a sandbox environment.
+            </p>
+          </Link>
+
+          {/* Card 4: Evidence */}
+          <Link
+            to="/docs"
+             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg">
+                <BookOpen size={32} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-purple-600 transition-colors">
+                Evidence Audit
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Check source publications directly from PubMed.
+            </p>
+          </Link>
+
         </div>
-      </div>
+      </main>
+
+      {/* Tech Footer */}
+      <TechFooter />
     </div>
   );
 }
+

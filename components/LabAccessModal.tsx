@@ -43,9 +43,9 @@ export default function LabAccessModal() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-primary mb-2">Lab Access Required</h2>
-          <p className="text-tertiary text-sm">
-            To unlock the High-Performance Biomedical Laboratory, please provide your Google Gemini API Key.
+          <h2 className="text-2xl font-bold text-primary mb-2">PrimeKG Lab Access</h2>
+          <p className="text-tertiary text-sm px-4">
+            Experience <b>Hallucination-Free Biomedical AI</b>. We combine standard LLMs with verified graph grounding to eliminate generative fabrication.
           </p>
         </div>
 

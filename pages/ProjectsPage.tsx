@@ -21,7 +21,7 @@ export default function ProjectsPage() {
     if (!projectsHook) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className={`text-center ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                <div className="text-center text-muted-foreground">
                     <p>Projects not available</p>
                 </div>
             </div>
@@ -35,21 +35,21 @@ export default function ProjectsPage() {
             {currentProject ? (
                 <>
                     {/* Header with Export */}
-                    <div className={`border-b px-6 py-4 flex items-center justify-between ${darkMode ? 'border-zinc-800 bg-zinc-950/50' : 'border-slate-200 bg-white/50'}`}>
+                    <div className="border-b px-6 py-4 flex items-center justify-between border-border bg-background/80 backdrop-blur-sm sticky top-0 z-10">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => projectsHook.setCurrentProjectId(null)}
-                                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-zinc-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600'}`}
+                                className="p-2 rounded-lg transition-colors hover:bg-accent text-muted-foreground hover:text-foreground"
                                 title="Back to projects"
                             >
                                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
                             </button>
                             <div>
-                                <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                                <h1 className="text-xl font-bold text-foreground">
                                     {currentProject.name}
                                 </h1>
                                 {currentProject.description && (
-                                    <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                    <p className="text-sm text-muted-foreground">
                                         {currentProject.description}
                                     </p>
                                 )}
@@ -79,11 +79,11 @@ export default function ProjectsPage() {
             ) : (
                 /* No Project Selected */
                 <div className="flex flex-col items-center justify-center h-full p-8">
-                    <span className="material-symbols-outlined text-6xl mb-4 opacity-50">folder_open</span>
-                    <h2 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                    <span className="material-symbols-outlined text-6xl mb-4 opacity-50 text-muted-foreground">folder_open</span>
+                    <h2 className="text-xl font-semibold mb-2 text-foreground">
                         No Project Selected
                     </h2>
-                    <p className={`text-sm text-center max-w-md mb-6 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <p className="text-sm text-center max-w-md mb-6 text-muted-foreground">
                         Select a project from the sidebar to view its contents, or create a new project to start organizing your research.
                     </p>
                     <button

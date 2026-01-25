@@ -176,27 +176,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const markdownComponents = {
     table: ({ children }: any) => (
       <div className="w-full overflow-x-auto">
-        <table className={`w-full text-xs sm:text-sm border-collapse ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>{children}</table>
+        <table className="w-full text-xs sm:text-sm border-collapse text-foreground">{children}</table>
       </div>
     ),
     thead: ({ children }: any) => (
-      <thead className={darkMode ? 'bg-slate-800' : 'bg-slate-50'}>{children}</thead>
+      <thead className="bg-muted text-muted-foreground font-medium">{children}</thead>
     ),
     th: ({ children }: any) => (
-      <th className={`text-left font-semibold px-3 py-2 border ${darkMode ? 'border-border text-primary' : 'border-slate-200 text-slate-700'}`}>{children}</th>
+      <th className="text-left font-semibold px-3 py-2 border border-border text-foreground">{children}</th>
     ),
     td: ({ children }: any) => (
-      <td className={`align-top px-3 py-2 border ${darkMode ? 'border-border text-secondary' : 'border-slate-200 text-slate-800'}`}>{children}</td>
+      <td className="align-top px-3 py-2 border border-border text-foreground">{children}</td>
     ),
     code: ({ children }: any) => (
-      <code className={`px-1 py-0.5 rounded ${darkMode ? 'bg-surface text-primary' : 'bg-slate-100 text-slate-800'}`}>{children}</code>
+      <code className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[0.9em]">{children}</code>
     ),
     a: ({ href, children }: any) => (
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className={`underline hover:text-accent font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}
+        className="underline hover:text-primary font-medium text-primary/80 transition-colors"
       >
         {children}
         <span className="material-symbols-outlined text-[10px] ml-0.5 inline-block align-top">open_in_new</span>
@@ -566,6 +566,13 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
   const handleSend = () => {
     if (!input.trim()) return;
+
+    const apiKey = getStoredApiKey();
+    if (!apiKey) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
     executeChat(input);
     setInput('');
   };
@@ -770,7 +777,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
               {/* Main Title */}
               <div className="space-y-4">
-                <h1 className={`text-4xl md:text-5xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
                   Hallucination-Free Biomedical AI
                   <span className={`block mt-2 bg-gradient-to-r ${darkMode
                     ? 'from-emerald-400 via-cyan-400 to-indigo-400'
@@ -779,7 +786,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                     via Graph Grounding
                   </span>
                 </h1>
-                <p className={`text-lg md:text-xl max-w-2xl mx-auto leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                <p className="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed text-muted-foreground">
                   Standard LLMs predict probable words; we retrieve verified facts.
                   Every answer is strictly constrained to nodes and edges within the{' '}
                   <a
@@ -795,8 +802,8 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               </div>
 
               {/* How it works - 3 steps */}
-              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto text-primary`}>
-                <div className={`p-4 rounded-xl bg-surface border border-border`}>
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto text-foreground`}>
+                <div className={`p-4 rounded-xl ${darkMode ? 'bg-zinc-800/50' : 'bg-white shadow-sm border border-slate-200'}`}>
                   <div className="text-2xl mb-2">💬</div>
                   <div className="text-sm font-medium">1. Ask in English</div>
                   <div className={`text-xs mt-1 text-tertiary`}>
@@ -822,22 +829,19 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               {/* API Key CTA */}
               {!hasApiKey && (
                 <div className={`max-w-md mx-auto p-6 rounded-2xl border ${darkMode
-                  ? 'border-indigo-500/30 bg-gradient-to-b from-indigo-500/10 to-purple-500/10'
-                  : 'border-indigo-200 bg-gradient-to-b from-indigo-50 to-purple-50 shadow-lg'
+                  ? 'border-indigo-500/30 bg-indigo-500/10'
+                  : 'border-indigo-200 bg-indigo-50 shadow-lg'
                   }`}>
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <span className={`material-symbols-outlined text-2xl text-indigo-500`}>rocket_launch</span>
-                    <span className={`font-semibold text-lg text-primary`}>Ready to Start?</span>
+                    <span className={`font-semibold text-lg text-foreground`}>Ready to Start?</span>
                   </div>
-                  <p className={`text-sm mb-4 text-secondary`}>
+                  <p className={`text-sm mb-4 text-center text-secondary leading-relaxed`}>
                     100% free. Just add your Gemini API key (also free).
                   </p>
                   <button
                     onClick={() => setShowApiKeyModal(true)}
-                    className={`w-full py-3 px-6 rounded-xl font-medium text-sm transition-all hover-lift ${darkMode
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-400 hover:to-purple-400'
-                      : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-md'
-                      }`}
+                    className="w-full py-3 px-6 rounded-xl font-medium text-sm transition-all hover-lift bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
                   >
                     Add API Key & Start Exploring
                   </button>
@@ -859,11 +863,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                   <SuggestedQuestions
                     onSelectQuestion={(query) => {
                       setInput(query);
-                      // Auto-send after a short delay for better UX
-                      setTimeout(() => {
-                        executeChat(query);
-                        setInput('');
-                      }, 100);
+                      // Do not auto-send; let user review and submit
                     }}
                     darkMode={darkMode}
                     maxQuestions={4}
@@ -880,8 +880,8 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in group`}>
                 <div className={`max-w-[85%] space-y-1 ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
                   <div className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
-                    ? 'bg-surface-hover text-primary rounded-tr-sm'
-                    : 'bg-surface/40 backdrop-blur-sm text-primary border border-border transition-all group-hover:bg-surface/60'
+                    ? 'bg-secondary text-foreground rounded-tr-sm'
+                    : 'bg-muted text-foreground border border-border transition-all hover:bg-muted/80'
                     }`}>
                     {msg.role !== 'user' ? (
                       <div className={`prose prose-sm max-w-none ${darkMode ? 'prose-invert' : 'prose-slate'}`}>
@@ -1046,7 +1046,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
         <div className="max-w-3xl mx-auto w-full pointer-events-auto">
           <div
             onClick={() => textareaRef.current?.focus()}
-            className="relative bg-[rgb(var(--color-bg-main))] border border-border rounded-2xl transition-all duration-200 shadow-sm cursor-text"
+            className="relative bg-surface border border-border rounded-2xl transition-all duration-200 shadow-sm cursor-text"
           >
             <textarea
               ref={textareaRef}
@@ -1054,7 +1054,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
-              className="w-full bg-transparent border-none text-primary placeholder-tertiary/60 focus:ring-0 focus:outline-none focus-visible:outline-none resize-none py-3.5 px-4 leading-relaxed text-[15px] min-h-[52px] max-h-48 no-scrollbar"
+              className="w-full bg-transparent border-none text-foreground placeholder-muted-foreground/60 focus:ring-0 focus:outline-none focus-visible:outline-none resize-none py-3.5 px-4 leading-relaxed text-[15px] min-h-[52px] max-h-48 no-scrollbar"
               placeholder="Ask about diseases, drugs, or molecular mechanisms..."
               rows={1}
             ></textarea>

@@ -57,7 +57,7 @@ export function CitationTooltip({
   }
 
   return (
-    <div 
+    <span 
       className="relative inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -115,7 +115,7 @@ export function CitationTooltip({
           </div>
         </div>
       )}
-    </div>
+    </span>
   );
 }
 

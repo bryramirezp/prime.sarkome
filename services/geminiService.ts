@@ -138,7 +138,33 @@ const getDrugCombinationsDecl: FunctionDeclaration = {
   },
 };
 
-// 12. Literature Search (RAG)
+// 12. Phenotype Matching
+const getPhenotypeMatchingDecl: FunctionDeclaration = {
+  name: "getPhenotypeMatching",
+  description: "Find drug candidates based on shared phenotypes (symptoms) with a disease.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      disease: { type: Type.STRING, description: "The disease name to find matches for." },
+    },
+    required: ["disease"],
+  },
+};
+
+// 13. Environmental Risks
+const getEnvironmentalRisksDecl: FunctionDeclaration = {
+  name: "getEnvironmentalRisks",
+  description: "Identify environmental exposures and risk factors linked to a disease.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      disease: { type: Type.STRING, description: "The disease name to analyze." },
+    },
+    required: ["disease"],
+  },
+};
+
+// 14. Literature Search (RAG)
 const getLiteratureDecl: FunctionDeclaration = {
   name: "getLiterature",
   description: "Search for scientific literature (PubMed/Europe PMC) to find evidence, papers, or citations for a specific biomedical entity.",
@@ -292,6 +318,8 @@ const tools: Tool[] = [{
     getTherapeuticTargetsDecl,
     getMechanismDecl,
     getDrugCombinationsDecl,
+    getPhenotypeMatchingDecl,
+    getEnvironmentalRisksDecl,
     getLiteratureDecl
   ]
 }];
@@ -364,7 +392,9 @@ Use Google Search when:
         getDrugRepurposingDecl,
         getTherapeuticTargetsDecl,
         getMechanismDecl,
-        getDrugCombinationsDecl
+        getDrugCombinationsDecl,
+        getPhenotypeMatchingDecl,
+        getEnvironmentalRisksDecl
       ]
     }];
     modeSystemInstruction = `
@@ -377,7 +407,6 @@ Use the available tools (searchSemantic, getNeighbors, etc.) to query the graph.
   const chat = ai.chats.create({
     model: modelName,
     config: {
-      maxOutputTokens: 20000,
       tools: activeTools,
       systemInstruction: `You are PrimeAI, an advanced biomedical research assistant with access to the PrimeKG knowledge graph.
 
@@ -401,8 +430,9 @@ First, resolve entities using semantic search. Then query appropriate tools. Fin
 - **getDrugRepurposing**: Find drug candidates for a disease
 - **getTherapeuticTargets**: Identify drug targets for a disease
 - **getDrugCombinations**: Find synergistic drug combinations
-- **getDrugCombinations**: Find synergistic drug combinations
 - **getMechanism**: Explain drug-disease mechanism of action
+- **getPhenotypeMatching**: Find drugs based on symptom overlap
+- **getEnvironmentalRisks**: Identify disease risk factors (toxins, lifestyle)
 - **getLiterature**: Find scientific papers to ground your answer with real citations
 
 ## CRITICAL RULES
@@ -570,6 +600,16 @@ ${toolContext}` : ''}`,
               onLog?.(`→ PrimeKG: combinations for ${String(args.drug ?? '')}`);
               const rawCombos = await kgService.getDrugCombinations(args.drug as string, abortSignal);
               apiResult = truncateToolResponse(rawCombos);
+              break;
+            case "getPhenotypeMatching":
+              onLog?.(`→ PrimeKG: phenotype matching for ${String(args.disease ?? '')}`);
+              const rawPheno = await kgService.getPhenotypeMatching(args.disease as string, abortSignal);
+              apiResult = truncateToolResponse(rawPheno);
+              break;
+            case "getEnvironmentalRisks":
+              onLog?.(`→ PrimeKG: environmental risks for ${String(args.disease ?? '')}`);
+              const rawEnv = await kgService.getEnvironmentalRisks(args.disease as string, abortSignal);
+              apiResult = truncateToolResponse(rawEnv);
               break;
             case "getLiterature":
               onLog?.(`→ PubMed: citations for ${String(args.entity ?? '')}`);

@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { GeminiModel } from '../types';
 
 /**
  * Model icon component for displaying the selected AI model
  */
 const ModelIcon: React.FC<{ model: GeminiModel }> = ({ model }) => {
-    if (model === GeminiModel.FLASH || model === GeminiModel.FLASH_2_0_EXP) {
+    if (model === GeminiModel.FLASH_2_0_EXP) {
+        return <span className="material-symbols-outlined">science</span>;
+    }
+    if (model === GeminiModel.FLASH) {
         return <span className="material-symbols-outlined">bolt</span>;
     }
     return <span className="material-symbols-outlined">psychology</span>;
@@ -44,6 +47,8 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
     const modelDropdownRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+    const isChat = location.pathname === '/chat';
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -71,49 +76,49 @@ const Header: React.FC<HeaderProps> = ({
     };
 
     return (
-        <header className="h-16 flex items-center px-5 gap-3 bg-[rgb(var(--color-bg-main))] border-b border-border/50 flex-shrink-0 relative z-[60]">
+        <header className="h-16 flex items-center px-5 gap-3 bg-card/50 backdrop-blur-sm border-b border-border flex-shrink-0 relative z-50">
             {/* Logo and Brand */}
-            <Link to="/dashboard" className="flex items-center gap-3 group transition-transform hover:scale-105">
+            <Link to="/dashboard" className="flex items-center gap-3 group transition-transform hover:scale-105" data-discover="true">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-indigo-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <img
-                      src="https://em-content.zobj.net/source/twitter/376/cow-face_1f42e.png"
-                      alt="cow"
-                      className="w-8 h-8 brightness-110 contrast-125 hue-rotate-[280deg] relative z-10"
-                  />
+                    <div className="absolute inset-0 bg-indigo-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <img 
+                        alt="cow" 
+                        className="w-8 h-8 brightness-110 contrast-125 hue-rotate-[280deg] relative z-10" 
+                        src="https://em-content.zobj.net/source/twitter/376/cow-face_1f42e.png" 
+                    />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-bold text-primary tracking-tight text-sm bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500">PRIME-LAB</span>
+                    <span className="font-bold text-foreground tracking-tight text-sm">PRIME-LAB</span>
                     <span className="text-[10px] font-semibold text-tertiary tracking-widest uppercase">Bio-Simulation</span>
                 </div>
             </Link>
 
             {/* Mobile menu button */}
             <div className="flex items-center gap-2 md:hidden ml-auto">
-                {onToggleSidebar && (
-                    <button
-                        className="text-secondary hover:text-primary z-50 p-1"
-                        onClick={onToggleSidebar}
+                {onToggleSidebar && isChat && (
+                    <button 
+                        className="text-muted-foreground hover:text-primary z-50 p-1" 
                         aria-label="Toggle sidebar"
+                        onClick={onToggleSidebar}
                     >
                         <span className="material-symbols-outlined">menu</span>
                     </button>
                 )}
             </div>
 
-            {/* Center: Model selector */}
+            {/* Center: Model selector (Preserved from original) */}
             {showModelSelectorProp && (
-                <div ref={modelDropdownRef} className="absolute left-1/2 -translate-x-1/2 z-50">
+                <div ref={modelDropdownRef} className="absolute left-1/2 -translate-x-1/2 z-50 hidden md:block">
                     <button
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="hidden md:flex items-center gap-2 bg-surface/80 backdrop-blur border border-border rounded-full p-1 pr-4 shadow-sm hover:bg-surface transition-colors whitespace-nowrap"
+                        className="flex items-center gap-2 bg-surface/80 backdrop-blur border border-border rounded-full p-1 pr-4 shadow-sm hover:bg-surface transition-colors whitespace-nowrap"
                         aria-expanded={isModelDropdownOpen}
                         aria-haspopup="listbox"
                     >
                         <div className="flex items-center justify-center w-7 h-7 bg-indigo-500/10 rounded-full text-indigo-500">
                             <ModelIcon model={selectedModel} />
                         </div>
-                        <span className="text-xs font-semibold text-primary">
+                        <span className="text-xs font-semibold text-foreground">
                             {selectedModel === GeminiModel.FLASH
                                 ? 'Gemini 3.0 Flash'
                                 : selectedModel === GeminiModel.PRO
@@ -127,14 +132,14 @@ const Header: React.FC<HeaderProps> = ({
                     {/* Model dropdown */}
                     {isModelDropdownOpen && (
                         <div
-                            className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-[rgb(var(--color-bg-main))] border border-border rounded-xl shadow-xl overflow-hidden animate-scale-in"
+                            className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden animate-scale-in"
                             role="listbox"
                         >
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.FLASH)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.FLASH
-                                    ? 'bg-surface text-primary'
-                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
+                                    ? 'bg-surface-hover text-foreground'
+                                    : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.FLASH}
@@ -145,8 +150,8 @@ const Header: React.FC<HeaderProps> = ({
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.PRO)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.PRO
-                                    ? 'bg-surface text-primary'
-                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
+                                    ? 'bg-surface text-foreground'
+                                    : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.PRO}
@@ -157,8 +162,8 @@ const Header: React.FC<HeaderProps> = ({
                             <button
                                 onClick={() => handleModelSelect(GeminiModel.FLASH_2_0_EXP)}
                                 className={`w-full text-left px-4 py-3 text-xs font-medium transition-colors flex items-center gap-2 ${selectedModel === GeminiModel.FLASH_2_0_EXP
-                                    ? 'bg-surface text-primary'
-                                    : 'text-secondary hover:bg-surface-hover hover:text-primary'
+                                    ? 'bg-surface text-foreground'
+                                    : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                                     }`}
                                 role="option"
                                 aria-selected={selectedModel === GeminiModel.FLASH_2_0_EXP}
@@ -171,41 +176,38 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
             )}
 
-
-
             {/* Right side controls */}
-            <div className="flex items-center gap-3 ml-auto">
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/5 border border-indigo-500/10 rounded-full">
-                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                   <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Active clearance</span>
-                </div>
-
-                <div className="h-4 w-[1px] bg-border/50 mx-1" />
-
-                {onLogout && (
-                    <button
-                        onClick={onLogout}
-                        className="flex items-center gap-1.5 text-xs font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest px-2 py-1"
-                        title="Lock Laboratory (Logout)"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">lock</span>
-                    </button>
-                )}
-
+            <div className="flex items-center gap-3 ml-auto hidden md:flex">
+                <a 
+                    href="https://github.com/bryramirezp/prime.sarkome" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-muted-foreground hover:text-primary transition-colors border border-transparent hover:border-border" 
+                    title="View Source on GitHub"
+                >
+                    <span className="material-symbols-outlined text-[20px]">code</span>
+                </a>
+                <button 
+                    onClick={onShowApiKeyModal}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all border ${hasApiKey 
+                        ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20' 
+                        : 'text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
+                    }`} 
+                    title={hasApiKey ? "API Key Active - Click to Manage" : "API Key Missing - Click to Configure"}
+                >
+                    <span className="material-symbols-outlined text-[20px]">key</span>
+                </button>
                 {onToggleDarkMode && (
-                    <button
+                    <button 
                         onClick={onToggleDarkMode}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-secondary hover:text-primary transition-colors border border-transparent hover:border-border"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors border border-transparent hover:border-purple-500/20" 
                         title="Toggle terminal mode"
                     >
-                        <span className="material-symbols-outlined text-[20px]">
-                            {darkMode ? 'light_mode' : 'dark_mode'}
-                        </span>
+                        <span className="material-symbols-outlined text-[20px]">dark_mode</span>
                     </button>
                 )}
             </div>
         </header>
-    );
-};
+    );};
 
 export default Header;

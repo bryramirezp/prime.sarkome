@@ -9,8 +9,10 @@ import DocsPage from './pages/DocsPage';
 import FaqPage from './pages/FaqPage';
 import ProjectsPage from './pages/ProjectsPage';
 import LabDashboard from './pages/LabDashboard';
-import HypothesisGame from './pages/HypothesisGame';
-import LabAccessModal from './components/LabAccessModal';
+import HypothesisSimulator from './pages/HypothesisSimulator';
+import HypothesisHub from './pages/HypothesisHub';
+import MolecularSim from './pages/MolecularSim';
+
 import { useApiKey } from './contexts/ApiKeyContext';
 import { useChatSessions } from './hooks/useChatSessions';
 import { useProjects } from './hooks/useProjects';
@@ -65,10 +67,7 @@ function App() {
     sessions.find((s) => s.id === currentSessionId) || null,
   [sessions, currentSessionId]);
 
-  // Render Access Modal if no key is valid
-  if (!isValid) {
-    return <LabAccessModal />;
-  }
+
 
   return (
     <Routes>
@@ -117,7 +116,13 @@ function App() {
         <Route path="/graph" element={<GraphExplorer darkMode={darkMode} />} />
 
         {/* Hypothesis Simulator Game */}
-        <Route path="/game" element={<HypothesisGame />} />
+        <Route path="/HypothesisSimulator" element={<HypothesisSimulator />} />
+
+        {/* Hypothesis Hub (New Unified Dashboard) */}
+        <Route path="/hypothesis" element={<HypothesisHub />} />
+
+        {/* Molecular Simulator (New) */}
+        <Route path="/molecular" element={<MolecularSim />} />
 
         {/* Statistics page */}
         <Route path="/stats" element={<StatsPage darkMode={darkMode} />} />

@@ -28,7 +28,7 @@ export default function DocsPage({ darkMode }: DocsPageProps) {
     }
 
     return (
-        <div className={`min-h-screen flex ${darkMode ? 'bg-zinc-950 text-slate-200' : 'bg-slate-50 text-slate-900'}`}>
+        <div className="min-h-screen flex bg-background text-foreground">
 
             {/* Docs Sidebar */}
             <DocsSidebar darkMode={darkMode} currentSlug={currentSlug} />

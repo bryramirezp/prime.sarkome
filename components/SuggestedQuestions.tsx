@@ -141,7 +141,7 @@ const SuggestedQuestions: React.FC<SuggestedQuestionsProps> = ({
                         <span className="text-xl flex-shrink-0 group-hover:scale-110 transition-transform">
                             {q.emoji}
                         </span>
-                        <span className={`text-sm font-medium leading-snug text-primary`}>
+                        <span className={`text-sm font-medium leading-snug text-foreground`}>
                             {q.label}
                         </span>
                     </button>

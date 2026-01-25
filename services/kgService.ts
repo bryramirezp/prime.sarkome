@@ -1,5 +1,14 @@
 import toast from 'react-hot-toast';
-import { GraphData, Stats, SearchResult, DrugRepurposingResponse, TherapeuticTargetsResponse, DrugCombinationsResponse } from '../types';
+import { 
+  GraphData, 
+  Stats, 
+  SearchResult, 
+  DrugRepurposingResponse, 
+  TherapeuticTargetsResponse, 
+  DrugCombinationsResponse,
+  PhenotypeMatchingResponse,
+  EnvironmentalRiskResponse
+} from '../types';
 
 const BASE_URL = 'https://kg.sarkome.com';
 
@@ -36,8 +45,14 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
     const message = error instanceof Error ? error.message : 'Unknown technical error';
     console.error(`[KG Service] Error on ${endpoint}:`, message);
 
-    // Only toast on non-background errors if needed, but for now global error toast is fine
-    toast.error(`PrimeKG API Error: ${message.slice(0, 100)}...`);
+    // Skip global toast for 404 (Not Found) to allow components to handle it gracefully
+    if (!message.includes('404')) {
+      let userMessage = message;
+      if (message === 'Failed to fetch') {
+        userMessage = 'Connection failed. The server (kg.sarkome.com) might be down, returning a 500 error, or blocked by CORS.';
+      }
+      toast.error(`PrimeKG API Error: ${userMessage.slice(0, 100)}${userMessage.length > 100 ? '...' : ''}`);
+    }
 
     throw error;
   }
@@ -67,6 +82,12 @@ export const kgService = {
   getDrugCombinations: (drug: string, signal?: AbortSignal) => fetchAPI<DrugCombinationsResponse>(`/hypothesis/combinations/${encodeURIComponent(drug)}`, { signal }),
 
   getDrugMechanism: (drug: string, disease: string, signal?: AbortSignal) => fetchAPI<GraphData>(`/hypothesis/mechanisms/${encodeURIComponent(drug)}/${encodeURIComponent(disease)}`, { signal }),
+
+  getPhenotypeMatching: (disease: string, signal?: AbortSignal) =>
+    fetchAPI<PhenotypeMatchingResponse>(`/hypothesis/phenotypes/${encodeURIComponent(disease)}`, { signal }),
+
+  getEnvironmentalRisks: (disease: string, signal?: AbortSignal) =>
+    fetchAPI<EnvironmentalRiskResponse>(`/risk/environmental/${encodeURIComponent(disease)}`, { signal }),
 
   getContext: (signal?: AbortSignal) => fetchAPI<any>('/context', { signal }),
 

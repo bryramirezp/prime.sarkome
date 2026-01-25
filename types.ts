@@ -3,6 +3,10 @@ export interface KGNode {
   type: string;
   name: string;
   source?: string;
+  db_id?: string;
+  node_name?: string;
+  node_type?: string;
+  description?: string;
 }
 
 export interface KGEdge {
@@ -10,6 +14,7 @@ export interface KGEdge {
   target: string;
   relation: string;
   display_relation?: string;
+  metadata?: any;
 }
 
 export interface GraphData {
@@ -22,6 +27,7 @@ export interface SearchResult {
   name: string;
   type: string;
   score?: number;
+  description?: string;
 }
 
 export enum GeminiModel {
@@ -61,4 +67,27 @@ export interface TherapeuticTargetsResponse {
 export interface DrugCombinationsResponse {
   drug: string;
   combinations: Array<{ drug: string; score: number; synergy?: number }>;
+}
+
+export interface PhenotypeCandidate {
+  drug: string;
+  shared_phenotypes: string[];
+  overlap_score: number;
+}
+
+export interface PhenotypeMatchingResponse {
+  disease: string;
+  candidates: PhenotypeCandidate[];
+}
+
+export interface EnvironmentalRisk {
+  exposure: string;
+  exposure_type: string;
+  relationship: string;
+  evidence_score?: number;
+}
+
+export interface EnvironmentalRiskResponse {
+  disease: string;
+  risks: EnvironmentalRisk[];
 }

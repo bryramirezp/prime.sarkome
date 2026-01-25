@@ -80,7 +80,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             {/* Header */}
             <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className={`text-lg font-semibold text-primary`}>
+                    <h2 className={`text-lg font-semibold text-foreground`}>
                         Research Projects
                     </h2>
                     <button
@@ -174,8 +174,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                             className={`
                         w-full px-2 py-1 text-sm rounded border
                         ${darkMode
-                                                    ? 'bg-surface border-border text-primary'
-                                                    : 'bg-white border-border text-primary'
+                                                    ? 'bg-surface border-border text-foreground'
+                                                    : 'bg-white border-border text-foreground'
                                                 }
                       `}
                                             autoFocus
@@ -256,7 +256,7 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className={`max-w-md w-full rounded-2xl p-6 bg-surface border border-border`}>
-                        <h3 className={`text-lg font-semibold mb-4 text-primary`}>
+                        <h3 className={`text-lg font-semibold mb-4 text-foreground`}>
                             Create New Project
                         </h3>
 
@@ -273,8 +273,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                     className={`
                     w-full px-3 py-2 rounded-lg border text-sm
                     ${darkMode
-                                            ? 'bg-surface-hover border-border text-primary placeholder-tertiary'
-                                            : 'bg-white border-border text-primary placeholder-tertiary'
+                                            ? 'bg-surface-hover border-border text-foreground placeholder-tertiary'
+                                            : 'bg-white border-border text-foreground placeholder-tertiary'
                                         }
                   `}
                                     autoFocus
@@ -293,8 +293,8 @@ const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                                     className={`
                     w-full px-3 py-2 rounded-lg border text-sm resize-none
                     ${darkMode
-                                            ? 'bg-surface-hover border-border text-primary placeholder-tertiary'
-                                            : 'bg-white border-border text-primary placeholder-tertiary'
+                                            ? 'bg-surface-hover border-border text-foreground placeholder-tertiary'
+                                            : 'bg-white border-border text-foreground placeholder-tertiary'
                                         }
                   `}
                                 />

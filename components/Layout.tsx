@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import AppBackground from './AppBackground';
 import ApiKeyModal from './ApiKeyModal';
 import { GeminiModel } from '../types';
 import { ChatSession } from '../schemas/sessionSchema';
@@ -79,8 +80,12 @@ const Layout: React.FC<LayoutProps> = ({
 
     return (
         <div
-            className={`h-screen flex flex-col font-sans overflow-hidden relative transition-colors duration-300 bg-[rgb(var(--color-bg-main))] text-secondary`}
+            className={`h-screen flex flex-col font-sans overflow-hidden relative transition-colors duration-300 text-secondary bg-transparent`}
         >
+            {/* Global Modular Background */}
+            <AppBackground />
+
+
             {/* API Key Modal (global management) */}
             <ApiKeyModal
                 isOpen={showApiKeyModal}
@@ -125,7 +130,7 @@ const Layout: React.FC<LayoutProps> = ({
                 />
 
                 {/* Page content */}
-                <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div id="layout-content" className="flex-1 flex flex-col min-h-0 overflow-y-auto relative">
                     <Outlet
                         context={{
                             darkMode,
@@ -136,7 +141,7 @@ const Layout: React.FC<LayoutProps> = ({
                             projectsHook,
                         }}
                     />
-                </main>
+                </div>
             </div>
         </div>
     );

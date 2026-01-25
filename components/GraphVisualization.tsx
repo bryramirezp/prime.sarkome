@@ -9,6 +9,7 @@ interface GraphVisualizationProps {
     height?: number;
     className?: string;
     onNodeClick?: (node: KGNode) => void;
+    highlightedEdges?: Set<string>; // Keys: "source-target-relation"
 }
 
 // Normalized node color palette
@@ -147,8 +148,9 @@ const GraphVisualization = React.memo(function GraphVisualization({
     className = "",
     onNodeClick,
     selectedNodeId,
+    highlightedEdges,
     children
-}: GraphVisualizationProps & { selectedNodeId?: string, children?: React.ReactNode }) {
+}: GraphVisualizationProps & { selectedNodeId?: string, highlightedEdges?: Set<string>, children?: React.ReactNode }) {
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const simulationRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
@@ -375,10 +377,24 @@ const GraphVisualization = React.memo(function GraphVisualization({
             .join(
                 enter => enter.append('line')
                     .attr('stroke', d => getEdgeColor(d.relation))
-                    .attr('stroke-width', 1.5)
-                    .attr('stroke-opacity', 0.4)
+                    .attr('stroke-width', d => {
+                        const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
+                        return highlightedEdges?.has(key) ? 4 : 1.5;
+                    })
+                    .attr('stroke-opacity', d => {
+                        const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
+                        return highlightedEdges?.has(key) ? 1 : 0.4;
+                    })
                     .attr('marker-end', d => `url(#arrowhead-${getEdgeColorKey(d.relation)})`),
-                update => update,
+                update => update
+                    .attr('stroke-width', d => {
+                        const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
+                        return highlightedEdges?.has(key) ? 4 : 1.5;
+                    })
+                    .attr('stroke-opacity', d => {
+                        const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
+                        return highlightedEdges?.has(key) ? 1 : 0.4;
+                    }),
                 exit => exit.remove()
             );
 
@@ -393,6 +409,10 @@ const GraphVisualization = React.memo(function GraphVisualization({
                     .attr('fill', darkMode ? '#94a3b8' : '#64748b')
                     .attr('text-anchor', 'middle')
                     .attr('opacity', 0.7)
+                    .attr('font-weight', d => {
+                        const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
+                        return highlightedEdges?.has(key) ? 'bold' : 'normal';
+                    })
                     .text(d => d.relation.length > 15 ? d.relation.slice(0, 15) + '...' : d.relation),
                 update => update,
                 exit => exit.remove()
@@ -456,7 +476,7 @@ const GraphVisualization = React.memo(function GraphVisualization({
             .style('filter', d => `drop-shadow(0 0 6px ${getNodeColor(d.type)}40)`);
 
         node.select('text')
-            .attr('fill', 'rgb(var(--color-text-primary))')
+            .attr('fill', darkMode ? '#ffffff' : '#000000')
             .text(d => d.name.length > 25 ? d.name.slice(0, 25) + '...' : d.name);
 
         // 7. Tick Handler
@@ -567,7 +587,7 @@ const GraphVisualization = React.memo(function GraphVisualization({
     return (
         <div
             ref={containerRef}
-            className={`relative rounded-xl overflow-hidden border transition-all duration-300 bg-surface/50 border-border ${isFullscreen ? 'fixed inset-0 z-50 w-full h-full rounded-none' : `w-full h-full ${className}`}`}
+            className={`relative rounded-xl overflow-hidden border transition-all duration-300 bg-background border-border ${isFullscreen ? 'fixed inset-0 z-50 w-full h-full rounded-none' : `w-full h-full ${className}`}`}
             style={isFullscreen ? { height: '100vh', width: '100vw' } : { height: '100%', width: '100%' }}
         >
             {/* Floating Toolbar (Zoom/Fullscreen) */}
@@ -601,7 +621,7 @@ const GraphVisualization = React.memo(function GraphVisualization({
                 {Array.from(new Set(data.nodes.map(n => n.type))).sort().slice(0, 8).map(type => (
                     <div key={type} className="flex items-center gap-1.5">
                         <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: getNodeColor(type) }} />
-                        <span className={`font-medium text-secondary`}>
+                        <span className={`font-medium text-muted-foreground`}>
                             {type.replace(/_/g, ' ')}
                         </span>
                     </div>
