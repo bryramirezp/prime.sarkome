@@ -714,6 +714,21 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                 onNodeClick={handleNodeClick}
                                 selectedNodeId={selectedNode?.id}
                                 highlightedEdges={highlightedEdges}
+                                onReset={() => {
+                                    setGraphData(null);
+                                    setSelectedNode(null);
+                                    setPathSource(null);
+                                    setAnalysisResults(null);
+                                    setHighlightedEdges(new Set());
+                                    toast.success("Visualization Reset", {
+                                        icon: '🗑️',
+                                        style: {
+                                            borderRadius: '10px',
+                                            background: darkMode ? '#333' : '#fff',
+                                            color: darkMode ? '#fff' : '#333',
+                                        }
+                                    });
+                                }}
                             >
                                 {/* HUD Overlay Info */}
                                 <div className={`absolute top-4 left-4 z-20 px-4 py-2 rounded-full border backdrop-blur-sm pointer-events-none animate-in fade-in slide-in-from-top-4 bg-surface/80 border-indigo-500/30 text-primary`}>
@@ -1086,4 +1101,4 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
 };
 
 export default GraphExplorer;
-<button class="p-1 rounded hover:bg-indigo-500/10 transition-colors text-muted-foreground hover:text-indigo-500" title="Generate new coordinates with Gemini 2.0"><span class="material-symbols-outlined text-[14px]">refresh</span></button>
+<button className="p-1 rounded hover:bg-indigo-500/10 transition-colors text-muted-foreground hover:text-indigo-500" title="Generate new coordinates with Gemini 2.0"><span className="material-symbols-outlined text-[14px]">refresh</span></button>

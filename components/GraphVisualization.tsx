@@ -9,6 +9,7 @@ interface GraphVisualizationProps {
     height?: number;
     className?: string;
     onNodeClick?: (node: KGNode) => void;
+    onReset?: () => void;
     highlightedEdges?: Set<string>; // Keys: "source-target-relation"
 }
 
@@ -147,6 +148,7 @@ const GraphVisualization = React.memo(function GraphVisualization({
     height = 400,
     className = "",
     onNodeClick,
+    onReset,
     selectedNodeId,
     highlightedEdges,
     children
@@ -604,6 +606,18 @@ const GraphVisualization = React.memo(function GraphVisualization({
                     <button onClick={handleReset} className={`p-2 rounded-md transition-colors hover:bg-surface-hover text-tertiary hover:text-indigo-600`} title="Reset View">
                         <span className="material-symbols-outlined text-[20px]">center_focus_strong</span>
                     </button>
+                    {onReset && (
+                        <>
+                            <div className={`w-4 h-px my-0.5 bg-border`}></div>
+                            <button 
+                                onClick={onReset} 
+                                className={`p-2 rounded-md transition-colors hover:bg-red-500/10 text-tertiary hover:text-red-500`} 
+                                title="Clear Graph (Reset)"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">delete_forever</span>
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 <button 
