@@ -136,4 +136,10 @@
   .text-secondary {
     color: hsl(var(--muted-foreground)) !important;
   }
+  
+  /* Ensure dropdowns are scrollable if they overflow */
+  .overflow-y-auto {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }

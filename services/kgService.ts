@@ -73,7 +73,7 @@ export const kgService = {
     fetchAPI<GraphData>(`/subgraph/${encodeURIComponent(entity)}?hops=${hops}&limit=${limit}`, { signal }),
 
 
-  getShortestPath: (source: string, target: string, signal?: AbortSignal) => fetchAPI<GraphData>(`/path/${encodeURIComponent(source)}/${encodeURIComponent(target)}`, { signal }),
+  getShortestPath: (source: string, target: string, signal?: AbortSignal) => fetchAPI<GraphData>(`/path/${encodeURIComponent(source)}/${encodeURIComponent(target)}?max_depth=3`, { signal }),
 
   getDrugRepurposing: (disease: string, signal?: AbortSignal) => fetchAPI<DrugRepurposingResponse>(`/hypothesis/repurposing/${encodeURIComponent(disease)}`, { signal }),
 

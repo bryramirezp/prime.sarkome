@@ -4,64 +4,77 @@ import { PhenotypeMatchingResponse } from '../../types';
 interface Props {
     data?: PhenotypeMatchingResponse;
     isLoading: boolean;
+    onVisualize?: (drug: string) => void;
 }
 
-const PhenotypeMatchCard: React.FC<Props> = ({ data, isLoading }) => {
-    if (isLoading) {
-        return <div className="bg-surface border border-border rounded-2xl p-6 h-80 animate-pulse bg-gradient-to-br from-surface to-surface-hover" />;
-    }
-
-    const candidates = data?.candidates || [];
-
+const PhenotypeMatchCard: React.FC<Props> = ({ data, isLoading, onVisualize }) => {
     return (
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-lg transition-all hover:border-orange-500/30">
-            <div className="p-4 border-b border-border bg-orange-500/5 flex items-center justify-between">
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm h-[320px] flex flex-col relative overflow-hidden group hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-6 duration-500">
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-orange-500">symptoms</span>
+                     <div className="p-1.5 bg-orange-500/10 rounded-lg text-orange-500">
+                        <span className="material-symbols-outlined text-[20px]">biotech</span>
+                    </div>
                     <h3 className="font-bold text-primary">Phenotype Matching</h3>
                 </div>
-                <span className="text-[10px] font-mono text-tertiary px-2 py-0.5 rounded-full bg-border/50">
-                    {candidates.length} matches
-                </span>
-            </div>
-            
-            <div className="p-4 h-64 overflow-y-auto custom-scrollbar space-y-3">
-                {candidates.length > 0 ? (
-                    candidates.map((c, i) => (
-                        <div key={i} className="p-3 rounded-xl bg-surface-hover/50 border border-border/50 group hover:border-orange-500/30 transition-all">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="font-bold text-sm text-primary group-hover:text-orange-500 transition-colors">{c.drug}</div>
-                                <div className="text-xs font-mono font-bold text-orange-400">
-                                    {Math.round(c.overlap_score * 100)}% Match
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-1">
-                                {c.shared_phenotypes.slice(0, 3).map((p, j) => (
-                                    <span key={j} className="text-[8px] bg-orange-500/10 text-orange-400 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">
-                                        {p}
-                                    </span>
-                                ))}
-                                {c.shared_phenotypes.length > 3 && (
-                                    <span className="text-[8px] text-tertiary">+{c.shared_phenotypes.length - 3} more</span>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center opacity-30">
-                        <span className="material-symbols-outlined text-4xl mb-2">clinical_notes</span>
-                        <p className="text-xs">No phenotypic matches</p>
+                 {data?.candidates && (
+                    <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
+                        {data.candidates.length} matches
                     </div>
                 )}
             </div>
-            
-            <div className="p-3 bg-surface-hover/30 border-t border-border flex justify-end">
-                <button 
-                    disabled={!data}
-                    className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 hover:text-indigo-400 disabled:opacity-30 flex items-center gap-1"
-                >
-                    Compare Symptoms <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2">
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full space-y-3 opacity-50">
+                        <div className="w-6 h-6 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+                        <div className="text-xs text-orange-400 font-mono">Comparing phenotypes...</div>
+                    </div>
+                ) : data?.candidates && data.candidates.length > 0 ? (
+                    <div className="space-y-2">
+                        {data.candidates.map((item, i) => (
+                            <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-orange-500/20 rounded-lg p-3 transition-all group/item">
+                                <div className="flex flex-col gap-2">
+                                     <div className="flex items-center justify-between">
+                                        <div className="font-bold text-sm text-primary">{item.drug}</div>
+                                         {onVisualize && (
+                                            <button 
+                                                onClick={() => onVisualize(item.drug)}
+                                                className="opacity-0 group-hover/item:opacity-100 p-1 text-orange-500 hover:bg-orange-500/10 rounded transition-all"
+                                            >
+                                                <span className="material-symbols-outlined text-[16px]">hub</span>
+                                            </button>
+                                        )}
+                                     </div>
+                                     
+                                     <div className="flex flex-wrap gap-1.5">
+                                        {item.shared_phenotypes?.slice(0, 3).map((p, j) => (
+                                            <span key={j} className="text-[9px] px-1.5 py-0.5 rounded-full bg-orange-500/5 text-orange-400 border border-orange-500/10">
+                                                {p}
+                                            </span>
+                                        ))}
+                                        {item.shared_phenotypes && item.shared_phenotypes.length > 3 && (
+                                            <span className="text-[9px] px-1.5 py-0.5 text-tertiary">
+                                                +{item.shared_phenotypes.length - 3}
+                                            </span>
+                                        )}
+                                     </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-tertiary opacity-60">
+                         <span className="material-symbols-outlined text-4xl mb-2 opacity-30">manage_search</span>
+                         <span className="text-xs">No phenotypic matches</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-border flex justify-end">
+                <button className="text-[10px] font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Compare Symptoms
+                    <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
                 </button>
             </div>
         </div>

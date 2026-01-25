@@ -180,6 +180,13 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Right side controls */}
             <div className="flex items-center gap-3 ml-auto hidden md:flex">
+                <Link 
+                    to="/docs/primekg-graph" 
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-muted-foreground hover:text-primary transition-colors border border-transparent hover:border-border" 
+                    title="Knowledge Graph Documentation"
+                >
+                    <span className="material-symbols-outlined text-[20px]">menu_book</span>
+                </Link>
                 <a 
                     href="https://github.com/bryramirezp/prime.sarkome" 
                     target="_blank" 

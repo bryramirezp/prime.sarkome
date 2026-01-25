@@ -476,7 +476,8 @@ const GraphVisualization = React.memo(function GraphVisualization({
             .style('filter', d => `drop-shadow(0 0 6px ${getNodeColor(d.type)}40)`);
 
         node.select('text')
-            .attr('fill', darkMode ? '#ffffff' : '#000000')
+            .attr('fill', darkMode ? '#ffffff' : '#0f172a') // White for dark mode, Slate-900 for light mode
+            .style('text-shadow', darkMode ? '0 1px 2px rgba(0,0,0,0.8)' : '0 1px 2px rgba(255,255,255,0.8)') // Text shadow for legibility
             .text(d => d.name.length > 25 ? d.name.slice(0, 25) + '...' : d.name);
 
         // 7. Tick Handler
@@ -639,7 +640,7 @@ const GraphVisualization = React.memo(function GraphVisualization({
                 width={dimensions.width}
                 height={dimensions.height}
                 className="w-full h-full block cursor-grab active:cursor-grabbing touch-none"
-                style={{ background: 'transparent' }}
+                style={{ background: 'transparent', borderRadius: '0' }}
             />
 
             {/* Embedded Overlays (e.g. Inspector) */}

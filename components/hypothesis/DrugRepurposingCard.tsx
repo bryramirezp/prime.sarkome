@@ -4,64 +4,83 @@ import { DrugRepurposingResponse } from '../../types';
 interface Props {
     data?: DrugRepurposingResponse;
     isLoading: boolean;
+    onVisualize?: (drug: string) => void;
 }
 
-const DrugRepurposingCard: React.FC<Props> = ({ data, isLoading }) => {
-    if (isLoading) {
-        return <div className="bg-surface border border-border rounded-2xl p-6 h-80 animate-pulse bg-gradient-to-br from-surface to-surface-hover" />;
-    }
-
-    const candidates = data?.candidates || [];
-
+const DrugRepurposingCard: React.FC<Props> = ({ data, isLoading, onVisualize }) => {
     return (
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-lg transition-all hover:border-blue-500/30">
-            <div className="p-4 border-b border-border bg-blue-500/5 flex items-center justify-between">
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm h-[320px] flex flex-col relative overflow-hidden group hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-blue-500">pill</span>
+                     <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500">
+                        <span className="material-symbols-outlined text-[20px]">medication_liquid</span>
+                    </div>
                     <h3 className="font-bold text-primary">Drug Repurposing</h3>
                 </div>
-                <span className="text-[10px] font-mono text-tertiary px-2 py-0.5 rounded-full bg-border/50">
-                    {candidates.length} candidates
-                </span>
+                {data?.candidates && (
+                    <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
+                        {data.candidates.length} candidates
+                    </div>
+                )}
             </div>
-            
-            <div className="p-4 h-64 overflow-y-auto custom-scrollbar space-y-3">
-                {candidates.length > 0 ? (
-                    candidates.map((c, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-surface-hover/50 border border-border/50 group hover:border-blue-500/30 transition-all">
-                            <div className="flex-1">
-                                <div className="font-bold text-sm text-primary group-hover:text-blue-500 transition-colors">{c.drug}</div>
-                                <div className="text-[10px] text-tertiary flex items-center gap-2">
-                                    <span>Signal Strength:</span>
-                                    <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full bg-blue-500" 
-                                            style={{ width: `${Math.min(100, (c.score || 0.5) * 100)}%` }} 
-                                        />
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2">
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full space-y-3 opacity-50">
+                        <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+                        <div className="text-xs text-indigo-400 font-mono">Scanning FDA database...</div>
+                    </div>
+                ) : data?.candidates && data.candidates.length > 0 ? (
+                    <div className="space-y-2">
+                        {data.candidates.map((item, i) => (
+                            <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-indigo-500/20 rounded-lg p-3 transition-all group/item">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="font-bold text-sm text-primary flex items-center gap-2">
+                                            {item.drug}
+                                            {item.score > 0.8 && (
+                                                <span className="text-[9px] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded font-mono uppercase tracking-wide">High Confidence</span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-1.5">
+                                            <div className="text-[10px] text-tertiary">
+                                                Match Score: <span className="font-mono text-primary font-bold">{item.score.toFixed(2)}</span>
+                                            </div>
+                                            {item.mechanism_strength && (
+                                                <div className="text-[10px] text-tertiary border-l border-border pl-3">
+                                                    MoA Strength: <span className="font-mono text-indigo-400 font-bold">{(item.mechanism_strength * 100).toFixed(0)}%</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
+                                    {onVisualize && (
+                                        <button 
+                                            onClick={() => onVisualize(item.drug)}
+                                            className="opacity-0 group-hover/item:opacity-100 p-1.5 hover:bg-indigo-500/20 text-indigo-500 rounded transition-all"
+                                            title="Visualize in Graph"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">hub</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-xs font-mono font-bold text-blue-400">
-                                    {((c.score || 0.5) * 100).toFixed(1)}%
-                                </div>
-                            </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center opacity-30">
-                        <span className="material-symbols-outlined text-4xl mb-2">science</span>
-                        <p className="text-xs">No candidates found</p>
+                    <div className="flex flex-col items-center justify-center h-full text-tertiary opacity-60">
+                         <span className="material-symbols-outlined text-4xl mb-2 opacity-30">science</span>
+                         <span className="text-xs">No candidates found</span>
                     </div>
                 )}
             </div>
             
-            <div className="p-3 bg-surface-hover/30 border-t border-border flex justify-end">
-                <button 
-                    disabled={!data}
-                    className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 hover:text-indigo-400 disabled:opacity-30 flex items-center gap-1"
-                >
-                    View Details <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            {/* Footer Action */}
+             <div className="mt-4 pt-3 border-t border-border flex justify-end">
+                <button className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 hover:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View Details
+                    <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
                 </button>
             </div>
         </div>

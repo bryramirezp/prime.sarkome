@@ -4,7 +4,15 @@ import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
 import { kgService } from '../services/kgService';
 import GraphVisualization from './GraphVisualization';
-import { GraphData, GeminiModel } from '../types';
+import { 
+    GraphData, 
+    GeminiModel, 
+    DrugRepurposingResponse, 
+    TherapeuticTargetsResponse, 
+    DrugCombinationsResponse, 
+    EnvironmentalRiskResponse,
+    PhenotypeMatchingResponse
+} from '../types';
 import { generateResponse } from '../services/geminiService';
 import { useApiKey } from '../contexts/ApiKeyContext';
 
@@ -62,6 +70,8 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
     // Inspector State
     const [selectedNode, setSelectedNode] = useState<any | null>(null);
     const [analysisCache, setAnalysisCache] = useState<Record<string, string>>({});
+    const [analysisResults, setAnalysisResults] = useState<any | null>(null);
+    const [activeAnalysisType, setActiveAnalysisType] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     
     // Quick Coordinates State
@@ -102,8 +112,17 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
         }
         setIsGeneratingCoords(true);
         try {
-            const prompt = `Generate 4 distinct, interesting biomedical entities (Gene, Drug, or Disease) relevant to precision medicine in 2026. 
-            Return ONLY a raw JSON array of strings, e.g. ["Entity1", "Entity2", ...]. Do not use code blocks.`;
+            // Include current coordinates to force variety (negative prompting)
+            const currentCoordsStr = quickCoordinates.join(', ');
+            const prompt = `Act as a high-end biomedical data scientist explorer. 
+            Generate 4 distinct, highly relevant biomedical entities (Drugs, Genes, or Diseases) for a knowledge graph.
+            
+            RULES:
+            1. DO NOT mention any of these: ${currentCoordsStr}.
+            2. Focus on: Precision Medicine, Rare Diseases, Oncology, or Immunotherapy.
+            3. Must be official names (e.g., 'Metformin', 'BRCA1', 'Cystic Fibrosis').
+            4. Return ONLY a raw JSON array of strings, e.g. ["Entity1", "Entity2", "Entity3", "Entity4"]. 
+            5. No markdown formatting, no code blocks.`;
             
             const response = await generateResponse(prompt, [], GeminiModel.FLASH_2_0_EXP, apiKey || undefined);
             const text = response.text.replace(/```json|```/g, '').trim();
@@ -111,7 +130,8 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
             
             if (Array.isArray(newCoords) && newCoords.length > 0) {
                 setQuickCoordinates(newCoords.slice(0, 4));
-                toast.success("Coordinates Updated", {
+                toast.success("Coordinates Rotated", {
+                    icon: '🛰️',
                     style: {
                         background: darkMode ? '#18181b' : '#fff',
                         color: darkMode ? '#fff' : '#333',
@@ -121,7 +141,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
             }
         } catch (err) {
             console.error("Failed to generate coordinates", err);
-            toast.error("Failed to fresh coordinates");
+            toast.error("Failed to refresh coordinates");
         } finally {
             setIsGeneratingCoords(false);
         }
@@ -367,7 +387,65 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
     // Handle Node Click - Open Inspector
     const handleNodeClick = (node: any) => {
         setSelectedNode(node);
-        // Do NOT clear analysis cache here, so we can return to it!
+        setAnalysisResults(null);
+        setActiveAnalysisType(null);
+    };
+
+    const handleApiAnalysis = async (node: any, type: string) => {
+        setIsAnalyzing(true);
+        setActiveAnalysisType(type);
+        setAnalysisResults(null);
+        try {
+            let result: any = null;
+            switch(type) {
+                case 'repurposing':
+                    result = await kgService.getDrugRepurposing(node.name);
+                    break;
+                case 'targets':
+                    result = await kgService.getTherapeuticTargets(node.name);
+                    break;
+                case 'combinations':
+                    result = await kgService.getDrugCombinations(node.name);
+                    break;
+                case 'phenotypes':
+                    result = await kgService.getPhenotypeMatching(node.name);
+                    break;
+                case 'environmental':
+                    result = await kgService.getEnvironmentalRisks(node.name);
+                    break;
+                case 'subgraph':
+                    const subgraphData = await kgService.getSubgraph(node.name, 1, 30);
+                    if (subgraphData.nodes.length > 0) {
+                        setGraphData(prev => {
+                            if (!prev) return subgraphData;
+                            const existingNodeIds = new Set(prev.nodes.map(n => n.id));
+                            const newNodes = subgraphData.nodes.filter(n => !existingNodeIds.has(n.name || n.id || n.db_id)).map(n => ({
+                                id: n.name || n.id || n.db_id,
+                                name: n.name || n.node_name || n.id,
+                                type: n.type || n.node_type || 'unknown',
+                                description: n.description || ''
+                            }));
+                            const existingEdgeKeys = new Set(prev.edges.map(e => `${e.source}-${e.target}-${e.relation}`));
+                            const newEdges = subgraphData.edges.filter(e => {
+                                const key = `${e.source}-${e.target}-${e.relation}`;
+                                return !existingEdgeKeys.has(key);
+                            });
+                            return {
+                                nodes: [...prev.nodes, ...newNodes],
+                                edges: [...prev.edges, ...newEdges]
+                            };
+                        });
+                        toast.success("Local subgraph merged into view.");
+                    }
+                    break;
+            }
+            setAnalysisResults(result);
+        } catch (err) {
+            console.error(`Analysis ${type} failed:`, err);
+            toast.error(`Failed to retrieve ${type} data.`);
+        } finally {
+            setIsAnalyzing(false);
+        }
     };
 
     const analyzeNode = async (node: any, context: string = 'general') => {
@@ -461,11 +539,11 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                         <div className="flex items-center gap-2 mb-1">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                             <h2 className={`text-xs font-bold uppercase tracking-[0.2em] ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                                Network Navigator
+                                Graph Explorer
                             </h2>
                         </div>
                         <h2 className="text-xl font-bold text-foreground">
-                            Bio-Cartography
+                            Precision Discovery Map
                         </h2>
                     </div>
 
@@ -681,76 +759,220 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                             {isAnalyzing ? (
                                                 <div className="flex flex-col items-center justify-center py-8 space-y-3">
                                                     <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-                                                    <span className="text-xs font-mono text-indigo-400">Analyzing Bio-Data...</span>
+                                                    <span className="text-xs font-mono text-indigo-400">Processing Bio-Signals...</span>
+                                                </div>
+                                            ) : analysisResults ? (
+                                                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                                                    <button 
+                                                        onClick={() => setAnalysisResults(null)}
+                                                        className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 uppercase tracking-tighter"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[12px]">arrow_back</span>
+                                                        Back to Research tools
+                                                    </button>
+
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-sm font-bold text-primary flex items-center gap-2">
+                                                            <span className="material-symbols-outlined text-[18px] text-indigo-400">
+                                                                {activeAnalysisType === 'repurposing' ? 'medication' : 
+                                                                 activeAnalysisType === 'targets' ? 'target' : 
+                                                                 activeAnalysisType === 'environmental' ? 'eco' : 'analytics'}
+                                                            </span>
+                                                            {activeAnalysisType === 'repurposing' ? 'Repurposing Candidates' : 
+                                                             activeAnalysisType === 'targets' ? 'Therapeutic Targets' : 
+                                                             activeAnalysisType === 'combinations' ? 'Synergy Combinations' : 
+                                                             activeAnalysisType === 'environmental' ? 'Environmental Risks' : 'Analysis Result'}
+                                                        </h4>
+
+                                                        {activeAnalysisType === 'repurposing' && analysisResults.candidates?.map((c: any, i: number) => (
+                                                            <div key={i} className="p-2 border border-border rounded-lg bg-surface/50 flex items-center justify-between group hover:border-indigo-500/50 transition-colors">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-xs font-bold text-primary truncate">{c.drug}</div>
+                                                                    <div className="text-[10px] text-tertiary">Match Score: {c.score.toFixed(2)}</div>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={() => { setEntity(c.drug); handleVisualize(c.drug); }}
+                                                                    className="p-1 text-indigo-400 hover:bg-indigo-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[16px]">radar</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+
+                                                        {activeAnalysisType === 'targets' && analysisResults.targets?.map((t: any, i: number) => (
+                                                            <div key={i} className="p-2 border border-border rounded-lg bg-surface/50 flex items-center justify-between group hover:border-red-500/50 transition-colors">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-xs font-bold text-primary truncate">{t.gene}</div>
+                                                                    <div className="text-[10px] text-tertiary">Evidence: {t.evidence_count || 0} hits</div>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={() => { setEntity(t.gene); handleVisualize(t.gene); }}
+                                                                    className="p-1 text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[16px]">radar</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+
+                                                        {activeAnalysisType === 'combinations' && analysisResults.combinations?.map((c: any, i: number) => (
+                                                            <div key={i} className="p-2 border border-border rounded-lg bg-surface/50 flex items-center justify-between group hover:border-blue-500/50 transition-colors">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-xs font-bold text-primary truncate">{c.drug}</div>
+                                                                    <div className="text-[10px] text-tertiary">Synergy: {c.synergy?.toFixed(2) || 'N/A'}</div>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={() => { setEntity(c.drug); handleVisualize(c.drug); }}
+                                                                    className="p-1 text-blue-400 hover:bg-blue-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[16px]">radar</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+
+                                                        {activeAnalysisType === 'environmental' && analysisResults.risks?.map((r: any, i: number) => (
+                                                            <div key={i} className="p-2 border border-border rounded-lg bg-surface/50 space-y-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-bold text-primary">{r.exposure}</span>
+                                                                    <span className="text-[9px] px-1 bg-emerald-500/10 text-emerald-500 rounded font-mono uppercase">{r.exposure_type}</span>
+                                                                </div>
+                                                                <div className="text-[10px] text-tertiary line-clamp-2">{r.relationship}</div>
+                                                            </div>
+                                                        ))}
+
+                                                        {activeAnalysisType === 'phenotypes' && analysisResults.candidates?.map((c: any, i: number) => (
+                                                            <div key={i} className="p-2 border border-border rounded-lg bg-surface/50 space-y-2 group hover:border-orange-500/50 transition-colors">
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="text-xs font-bold text-primary truncate">{c.drug}</div>
+                                                                    <button 
+                                                                        onClick={() => { setEntity(c.drug); handleVisualize(c.drug); }}
+                                                                        className="p-1 text-orange-400 hover:bg-orange-500/10 rounded"
+                                                                    >
+                                                                        <span className="material-symbols-outlined text-[14px]">radar</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {c.shared_phenotypes?.slice(0, 3).map((p: string, j: number) => (
+                                                                        <span key={j} className="text-[8px] px-1.5 py-0.5 bg-orange-500/5 text-orange-400 border border-orange-500/10 rounded-full">
+                                                                            {p}
+                                                                        </span>
+                                                                    ))}
+                                                                    {c.shared_phenotypes?.length > 3 && (
+                                                                        <span className="text-[8px] text-tertiary">+{c.shared_phenotypes.length - 3} more</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-[9px] text-tertiary">Overlap Score: {c.overlap_score?.toFixed(2)}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             ) : analysisCache[selectedNode.id] ? (
-                                                <div className={`prose prose-sm prose-invert max-w-none text-muted-foreground`}>
-                                                    <ReactMarkdown 
-                                                        remarkPlugins={[remarkGfm]}
-                                                        components={{
-                                                            h3: ({node, ...props}) => <h3 className={`text-sm font-bold uppercase tracking-wide mt-4 mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} {...props} />,
-                                                            p: ({node, ...props}) => <p className="mb-3 text-xs leading-relaxed" {...props} />,
-                                                            ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-3 space-y-1" {...props} />,
-                                                            li: ({node, ...props}) => <li className="text-xs pl-1 marker:text-indigo-500" {...props} />,
-                                                            strong: ({node, ...props}) => <strong className={`font-bold ${darkMode ? 'text-indigo-300' : 'text-indigo-700'}`} {...props} />
-                                                        }}
+                                                <div className="space-y-4">
+                                                    <button 
+                                                        onClick={() => setAnalysisCache(prev => { const n = {...prev}; delete n[selectedNode.id]; return n; })}
+                                                        className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 uppercase tracking-tighter"
                                                     >
-                                                        {analysisCache[selectedNode.id]}
-                                                    </ReactMarkdown>
+                                                        <span className="material-symbols-outlined text-[12px]">arrow_back</span>
+                                                        Reset Gemini Brief
+                                                    </button>
+                                                    <div className={`prose prose-sm prose-invert max-w-none text-muted-foreground`}>
+                                                        <ReactMarkdown 
+                                                            remarkPlugins={[remarkGfm]}
+                                                            components={{
+                                                                h3: ({node, ...props}) => <h3 className={`text-sm font-bold uppercase tracking-wide mt-4 mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`} {...props} />,
+                                                                p: ({node, ...props}) => <p className="mb-3 text-xs leading-relaxed" {...props} />,
+                                                                ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-3 space-y-1" {...props} />,
+                                                                li: ({node, ...props}) => <li className="text-xs pl-1 marker:text-indigo-500" {...props} />,
+                                                                strong: ({node, ...props}) => <strong className={`font-bold ${darkMode ? 'text-indigo-300' : 'text-indigo-700'}`} {...props} />
+                                                            }}
+                                                        >
+                                                            {analysisCache[selectedNode.id]}
+                                                        </ReactMarkdown>
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    <div className={`p-3 rounded-xl flex items-center gap-3 ${darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
-                                                        <span className="material-symbols-outlined text-[20px] text-indigo-400">psychology</span>
-                                                        <div className="flex-1">
-                                                            <div className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">AI Research Assistant</div>
-                                                            <div className="text-xs opacity-90">Generate instant clinical insights</div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 gap-2">
+                                                <div className="flex flex-col gap-4 w-full">
+                                                    {/* Tool Sets */}
+                                                    <div className="space-y-4">
                                                         {/* Primary Bio-Brief */}
                                                         <button
                                                             onClick={() => analyzeNode(selectedNode, 'general')}
-                                                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-between group hover:brightness-110 transition-all"
+                                                            className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-between group hover:brightness-110 transition-all"
                                                         >
-                                                            <span>Generate Nano-Brief</span>
-                                                            <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="material-symbols-outlined text-[18px]">psychology</span>
+                                                                <span>Generate Nano-Brief</span>
+                                                            </div>
+                                                            <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">bolt</span>
                                                         </button>
 
-                                                        {/* Context Actions based on Type */}
-                                                        {(selectedNode.type === 'disease' || selectedNode.type === 'phenotype') && (
-                                                            <div className="grid grid-cols-2 gap-2 mt-1">
-                                                                <button onClick={() => analyzeNode(selectedNode, 'treatments')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Rx Treatments
-                                                                </button>
-                                                                <button onClick={() => analyzeNode(selectedNode, 'genetics')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Genetics
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                        {/* Specialized Intelligence Tools */}
+                                                        <div className="space-y-2">
+                                                            <h5 className="text-[10px] font-bold text-tertiary uppercase tracking-widest pl-1">Bio-Intelligence Tools</h5>
+                                                            
+                                                            <div className="grid grid-cols-1 gap-2">
+                                                                {(selectedNode.type === 'disease' || selectedNode.type === 'phenotype') && (
+                                                                    <>
+                                                                        <button onClick={() => handleApiAnalysis(selectedNode, 'repurposing')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-indigo-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-indigo-400 group-hover:scale-110 transition-transform">medication_liquid</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">Repurposing Scan</div>
+                                                                                <div className="text-[9px] text-tertiary">Find FDA-approved candidates</div>
+                                                                            </div>
+                                                                        </button>
+                                                                        <button onClick={() => handleApiAnalysis(selectedNode, 'targets')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-red-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-red-400 group-hover:scale-110 transition-transform">target</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">Target Discovery</div>
+                                                                                <div className="text-[9px] text-tertiary">Identify therapeutic vulnerabilities</div>
+                                                                            </div>
+                                                                        </button>
+                                                                        <button onClick={() => handleApiAnalysis(selectedNode, 'environmental')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-emerald-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-emerald-400 group-hover:scale-110 transition-transform">eco</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">Risk Analytics</div>
+                                                                                <div className="text-[9px] text-tertiary">Environmental & Exposure factors</div>
+                                                                            </div>
+                                                                        </button>
+                                                                        <button onClick={() => handleApiAnalysis(selectedNode, 'phenotypes')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-orange-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-orange-400 group-hover:scale-110 transition-transform">biotech</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">Phenotype Discovery</div>
+                                                                                <div className="text-[9px] text-tertiary">Similar diseases & drugs</div>
+                                                                            </div>
+                                                                        </button>
+                                                                    </>
+                                                                )}
 
-                                                        {selectedNode.type === 'drug' && (
-                                                            <div className="grid grid-cols-2 gap-2 mt-1">
-                                                                <button onClick={() => analyzeNode(selectedNode, 'mechanism')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Mech. of Action
-                                                                </button>
-                                                                <button onClick={() => analyzeNode(selectedNode, 'safety')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Safety Profile
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                                {selectedNode.type === 'drug' && (
+                                                                    <>
+                                                                        <button onClick={() => handleApiAnalysis(selectedNode, 'combinations')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-blue-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-blue-400 group-hover:scale-110 transition-transform">join_inner</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">Synergy Combinations</div>
+                                                                                <div className="text-[9px] text-tertiary">Find high-potential pairings</div>
+                                                                            </div>
+                                                                        </button>
+                                                                        <button onClick={() => analyzeNode(selectedNode, 'mechanism')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-amber-500/50 transition-all group">
+                                                                            <span className="material-symbols-outlined text-amber-400 group-hover:scale-110 transition-transform">settings_accessibility</span>
+                                                                            <div className="text-left">
+                                                                                <div className="text-[11px] font-bold text-primary">MoA Summary</div>
+                                                                                <div className="text-[9px] text-tertiary">Gemini Mechanism Analysis</div>
+                                                                            </div>
+                                                                        </button>
+                                                                    </>
+                                                                )}
 
-                                                        {(selectedNode.type === 'gene' || selectedNode.type === 'protein') && (
-                                                            <div className="grid grid-cols-2 gap-2 mt-1">
-                                                                <button onClick={() => analyzeNode(selectedNode, 'associations')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Disease Links
-                                                                </button>
-                                                                <button onClick={() => analyzeNode(selectedNode, 'genetics')} className="p-2 border border-indigo-500/30 rounded hover:bg-indigo-500/10 text-[10px] font-bold uppercase text-indigo-400">
-                                                                    Pathways
-                                                                </button>
+                                                                {(selectedNode.type === 'gene' || selectedNode.type === 'protein') && (
+                                                                    <button onClick={() => analyzeNode(selectedNode, 'associations')} className="flex items-center gap-3 p-2.5 border border-border rounded-xl hover:bg-surface-hover hover:border-indigo-500/50 transition-all group">
+                                                                        <span className="material-symbols-outlined text-indigo-400 group-hover:scale-110 transition-transform">link</span>
+                                                                        <div className="text-left">
+                                                                            <div className="text-[11px] font-bold text-primary">Clinical Context</div>
+                                                                            <div className="text-[9px] text-tertiary">Top associated disease states</div>
+                                                                        </div>
+                                                                    </button>
+                                                                )}
                                                             </div>
-                                                        )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -776,32 +998,56 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                                     className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10`}
                                                 >
                                                     <span className="material-symbols-outlined text-[16px]">dynamic_feed</span>
-                                                    Expand Connections
+                                                    Expand Neighbors
                                                 </button>
                                                 <button 
-                                                    onClick={() => {
-                                                        if (pathSource) {
-                                                            handleFindPath(pathSource.name, selectedNode.name);
-                                                        } else {
-                                                            setPathSource(selectedNode);
-                                                            toast(`Source locked: ${selectedNode.name}. Select target node.`, { icon: '📍' });
-                                                        }
-                                                    }}
-                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${pathSource ? 'bg-amber-500 text-white border-amber-400' : 'border-border text-muted-foreground hover:bg-surface-hover'}`}
+                                                    onClick={() => handleApiAnalysis(selectedNode, 'subgraph')}
+                                                    className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10`}
                                                 >
-                                                    <span className="material-symbols-outlined text-[16px]">
-                                                        {pathSource ? 'route' : 'location_searching'}
-                                                    </span>
-                                                    {pathSource ? `To ${selectedNode.name}` : 'Set as Path Source'}
+                                                    <span className="material-symbols-outlined text-[16px]">hub</span>
+                                                    Extract Subgraph
                                                 </button>
-                                                {pathSource && (
+                                                <div className="pt-2">
                                                     <button 
-                                                        onClick={() => setPathSource(null)}
-                                                        className="w-full text-[10px] text-red-400 hover:text-red-500 font-bold uppercase tracking-tighter"
+                                                        onClick={() => {
+                                                            if (pathSource && pathSource.id === selectedNode.id) {
+                                                                // Deselect if same
+                                                                setPathSource(null);
+                                                            } else if (pathSource) {
+                                                                // If source already exists, this is the target
+                                                                handleFindPath(pathSource.name, selectedNode.name);
+                                                            } else {
+                                                                // Set as source
+                                                                setPathSource(selectedNode);
+                                                                toast.success(`Starting from: ${selectedNode.name}. Now select a destination node.`, { icon: '📍' });
+                                                            }
+                                                        }}
+                                                        className={`w-full py-2 border rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                                            pathSource?.id === selectedNode.id 
+                                                                ? 'bg-amber-500 text-white border-amber-400 hover:bg-amber-600 shadow-md' 
+                                                                : pathSource 
+                                                                    ? 'bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600 shadow-md animate-pulse' // Prompt to complete path
+                                                                    : 'border-border text-muted-foreground hover:bg-surface-hover'
+                                                        }`}
                                                     >
-                                                        Cancel Path Selection
+                                                        <span className="material-symbols-outlined text-[16px]">
+                                                            {pathSource?.id === selectedNode.id ? 'pin_drop' : pathSource ? 'route' : 'alt_route'}
+                                                        </span>
+                                                        {pathSource?.id === selectedNode.id 
+                                                            ? 'Path Origin (Cancel)' 
+                                                            : pathSource 
+                                                                ? 'Calculate Path to Here' 
+                                                                : 'Find Shortest Path'}
                                                     </button>
-                                                )}
+                                                    {pathSource && (
+                                                        <button 
+                                                            onClick={() => setPathSource(null)}
+                                                            className="w-full mt-1 text-[10px] text-red-400 hover:text-red-500 font-bold uppercase tracking-tight py-1"
+                                                        >
+                                                            Cancel Pathfinding
+                                                        </button>
+                                                    )}
+                                                </div>
                                                 <a 
                                                     href={`https://pubmed.ncbi.nlm.nih.gov/?term=${selectedNode.name}`}
                                                     target="_blank"
@@ -840,3 +1086,4 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
 };
 
 export default GraphExplorer;
+<button class="p-1 rounded hover:bg-indigo-500/10 transition-colors text-muted-foreground hover:text-indigo-500" title="Generate new coordinates with Gemini 2.0"><span class="material-symbols-outlined text-[14px]">refresh</span></button>

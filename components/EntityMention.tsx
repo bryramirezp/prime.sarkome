@@ -123,7 +123,8 @@ const EntityMention: React.FC<EntityMentionProps> = ({
                 font-medium transition-all
                 hover:scale-105 active:scale-95
                 hover:scale-105 active:scale-95
-                text-accent hover:bg-accent/10 hover:text-accent-hover
+                text-primary hover:bg-primary/10
+                dark:text-blue-300 dark:bg-blue-400/10 dark:hover:bg-blue-400/20
               `}
                             title={`Explore ${part} in the knowledge graph`}
                         >

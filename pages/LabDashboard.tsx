@@ -1,8 +1,8 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
-import { Shield, Share2, Dna, BookOpen, MessageSquareText, FlaskConical } from 'lucide-react';
+import { Shield, Share2, Dna, BookOpen, MessageSquareText, FlaskConical, ChevronDown, Gamepad2, BrainCircuit } from 'lucide-react';
 import { useApiKey } from '../contexts/ApiKeyContext';
 import { LayoutContext } from '../components/Layout';
 import TechFooter from '../components/TechFooter';
@@ -10,6 +10,7 @@ import TechFooter from '../components/TechFooter';
 export default function LabDashboard() {
   const { isValid } = useApiKey();
   const { onShowApiKeyModal } = useOutletContext<LayoutContext>();
+  const [showExperimentalMenu, setShowExperimentalMenu] = useState(false);
 
   return (
     <div className="min-h-full w-full flex flex-col font-sans text-muted-foreground relative bg-background">
@@ -73,6 +74,17 @@ export default function LabDashboard() {
             <p className="text-sm text-muted-foreground leading-relaxed">
               Standard LLMs predict probable words; we retrieve verified facts. Every answer is strictly constrained to nodes and edges within the PrimeKG Knowledge Graph, eliminating generative fabrication.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                Fact-Grounding
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300">
+                Knowledge Retrieval
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
+                Verified Synthesis
+              </span>
+            </div>
              {!isValid && (
               <div className="mt-4 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-3 py-2 rounded-md inline-block w-fit">
                  ⚠️ AI Key Required for this feature
@@ -80,7 +92,7 @@ export default function LabDashboard() {
             )}
           </Link>
 
-          {/* Card 2: Navigator */}
+          {/* Card 2: Discovery Map */}
           <Link
             to="/graph"
             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
@@ -90,66 +102,127 @@ export default function LabDashboard() {
                 <Share2 size={32} />
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-emerald-600 transition-colors">
-                Relational Navigator
+                Precision Discovery Map
               </h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Visualize connections between drugs, diseases, and phenotypes.
+              Navigate 8.1M+ biological relationships to discover drug repurposing candidates, identify therapeutic targets, and map disease-drug pathways with 1-hop precision.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                Repurposing
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                Target Discovery
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                Path-Finding
+              </span>
+            </div>
           </Link>
 
-          {/* Card 3: Experimental (formerly Hypothesis Simulator) */}
-          <Link
-            to="/HypothesisSimulator"
-             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="p-3 bg-pink-50 dark:bg-pink-900/20 text-pink-600 rounded-lg">
-                <FlaskConical size={32} />
+          {/* Card 3: Experimental Games Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowExperimentalMenu(!showExperimentalMenu)}
+              className={`w-full text-left group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98] ${showExperimentalMenu ? 'ring-2 ring-pink-500/20 border-pink-500/50' : ''}`}
+            >
+              <div className="flex items-center justify-between w-full mb-3 sm:mb-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="p-3 bg-pink-50 dark:bg-pink-900/20 text-pink-600 rounded-lg">
+                    <FlaskConical size={32} />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-pink-600 transition-colors">
+                    Experimental
+                  </h3>
+                </div>
+                <ChevronDown className={`text-muted-foreground transition-transform duration-300 ${showExperimentalMenu ? 'rotate-180 text-pink-600' : ''}`} />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-pink-600 transition-colors">
-                Experimental
-              </h3>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Interactive games to validate biological connections. All hypotheses must be grounded in PrimeKG evidence.
-            </p>
-          </Link>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Interactive games to validate biological connections. Resolve clinical cases and learn through simulation.
+              </p>
 
-          {/* Card 3.5: Molecular Simulator (New Duplicate) */}
-          <Link
-            to="/molecular"
-             className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg">
-                <Dna size={32} />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300">
+                  Learning Games
+                </span>
+                <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                  Case Solving
+                </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-red-600 transition-colors">
-                Molecular Simulator
-              </h3>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Explore mechanistic pathways and molecular interactions in a sandbox environment.
-            </p>
-          </Link>
+            </button>
 
-          {/* Card 4: Evidence */}
+            {/* Dropdown Menu */}
+            {showExperimentalMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-transparent" 
+                  onClick={() => setShowExperimentalMenu(false)}
+                />
+                <div className="absolute left-0 right-0 mt-2 p-2 bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in duration-200 origin-top">
+                  <div className="grid grid-cols-1 gap-1">
+                    <Link
+                      to="/HypothesisSimulator"
+                      className="flex items-start gap-4 p-4 rounded-lg hover:bg-pink-50 dark:hover:bg-pink-900/20 group/item transition-colors"
+                      onClick={() => setShowExperimentalMenu(false)}
+                    >
+                      <div className="p-2 bg-pink-100 dark:bg-pink-900/40 text-pink-600 rounded-lg shrink-0">
+                        <BrainCircuit size={20} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-foreground group-hover/item:text-pink-600 transition-colors cursor-default">Hypothesis Simulator</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 cursor-default">Validate connections via interactive clinical cases.</div>
+                      </div>
+                    </Link>
+
+                    <div className="h-px bg-border mx-2" />
+
+                    <Link
+                      to="/molecular"
+                      className="flex items-start gap-4 p-4 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 group/item transition-colors"
+                      onClick={() => setShowExperimentalMenu(false)}
+                    >
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-lg shrink-0">
+                        <Dna size={20} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-foreground group-hover/item:text-blue-600 transition-colors cursor-default">Molecular Simulator</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 cursor-default">Explore mechanistic pathways in a sandbox environment.</div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Card 4: Hypothesis Hub */}
           <Link
-            to="/docs"
+            to="/hypothesis"
              className="group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98]"
           >
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg">
-                <BookOpen size={32} />
+                <BrainCircuit size={32} />
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-purple-600 transition-colors">
-                Evidence Audit
+                Hypothesis Hub
               </h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Check source publications directly from PubMed.
+              Run comprehensive biomedical simulations across the PrimeKG knowledge graph to discover drug candidates, genetic targets, and environmental risk factors.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                In-Silico Simulation
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300">
+                Precision Medicine
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                 Multi-Omics
+              </span>
+            </div>
           </Link>
 
         </div>
