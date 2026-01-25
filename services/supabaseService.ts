@@ -263,7 +263,8 @@ export const chatSyncService = {
 };
 
 /**
- * Generate a simple browser fingerprint for anonymous user isolation
+ * Generate a robust browser fingerprint for anonymous user isolation
+ * Uses crypto.randomUUID() when possible for collision resistance
  */
 export const getBrowserFingerprint = (): string => {
   if (typeof window === 'undefined') return 'server';
@@ -271,7 +272,15 @@ export const getBrowserFingerprint = (): string => {
   const stored = localStorage.getItem('primekg_fingerprint');
   if (stored) return stored;
 
-  const fp = 'fp_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  // Use standard UUID if available (guaranteed uniqueness)
+  let fp: string;
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    fp = 'fp_' + crypto.randomUUID().replace(/-/g, '');
+  } else {
+    // Fallback for older browsers
+    fp = 'fp_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  }
+
   localStorage.setItem('primekg_fingerprint', fp);
   return fp;
 };
