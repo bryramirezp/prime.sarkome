@@ -192,7 +192,7 @@ export default function Sidebar({
               >
                 <span className="flex items-center justify-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">folder</span>
-                  Projects
+                  Working
                 </span>
               </button>
             </div>

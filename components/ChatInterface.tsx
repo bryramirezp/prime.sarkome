@@ -33,6 +33,40 @@ const ModelIcon: React.FC<{ model: GeminiModel; className?: string }> = ({ model
 };
 
 
+const inferNodeType = (edge: any, isSource: boolean): string => {
+  // 1. Try explicit type fields if available (API might return them)
+  if (isSource && edge.source_type) return edge.source_type;
+  if (!isSource && edge.target_type) return edge.target_type;
+
+  // 2. Infer from known relation semantics (PrimeKG rules)
+  const rel = (edge.relation || '').toLowerCase();
+  const otherType = (isSource ? (edge.target_type || '') : (edge.source_type || '')).toLowerCase();
+
+  // Indication: Drug <-> Disease
+  if (rel === 'indication' || rel === 'contraindication') {
+    if (otherType.includes('drug')) return 'disease';
+    if (otherType.includes('disease')) return 'drug';
+  }
+
+  // Drug Targets: Drug -> Gene/Protein
+  if (rel === 'target') {
+    if (isSource) return 'drug';
+    return 'geneprotein';
+  }
+
+  // Synergistic interaction: Drug <-> Drug
+  if (rel === 'synergistic_interaction') {
+    return 'drug';
+  }
+
+  // Hierarchy: Usually preserves type (Disease->Disease, Anatomy->Anatomy)
+  if (rel === 'parent_child' && otherType) {
+    return otherType;
+  }
+
+  return 'unknown';
+};
+
 // Utility to extract graph data from tool results
 const extractGraphData = (toolResults: Array<{ name: string; args: any; result: any }> | undefined): GraphData | undefined => {
   if (!toolResults || toolResults.length === 0) return undefined;
@@ -56,7 +90,7 @@ const extractGraphData = (toolResults: Array<{ name: string; args: any; result: 
           graphNodes.push({
             id: edge.source,
             name: edge.source,
-            type: 'unknown' // We don't have type info from neighbors endpoint
+            type: inferNodeType(edge, true)
           });
         }
 
@@ -66,7 +100,7 @@ const extractGraphData = (toolResults: Array<{ name: string; args: any; result: 
           graphNodes.push({
             id: edge.target,
             name: edge.target,
-            type: edge.target_type || 'unknown'
+            type: inferNodeType(edge, false)
           });
         }
 
@@ -962,7 +996,23 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                         )}
                       </div>
                     ) : (
-                      msg.content
+                      <div className="flex flex-col gap-2">
+                         {msg.relatedData?.files && Array.isArray(msg.relatedData.files) && (
+                            <div className="flex flex-wrap gap-2">
+                              {msg.relatedData.files.map((file: any, idx: number) => 
+                                file.type === 'image' && (
+                                  <img 
+                                    key={idx} 
+                                    src={`data:${file.mimeType};base64,${file.data}`} 
+                                    alt="Attachment" 
+                                    className="max-w-full h-auto max-h-64 rounded-lg border border-white/10"
+                                  />
+                                )
+                              )}
+                            </div>
+                         )}
+                         <div className="whitespace-pre-wrap">{msg.content}</div>
+                      </div>
                     )}
                   </div>
 
@@ -1061,11 +1111,26 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
             ></textarea>
 
             {uploadedFiles.length > 0 && (
-              <div className="px-5 pb-2 flex gap-2 overflow-x-auto">
-                {uploadedFiles.map(f => (
-                  <div key={f.name} className="bg-surface-hover px-2 py-1 rounded text-xs text-secondary flex items-center gap-1">
-                    <span>{f.name}</span>
-                    <button onClick={(e) => { e.stopPropagation(); setUploadedFiles(prev => prev.filter(x => x !== f)); }} className="hover:text-primary">×</button>
+              <div className="px-5 pb-2 flex gap-3 overflow-x-auto py-2">
+                {uploadedFiles.map((f, i) => (
+                  <div key={`${f.name}-${i}`} className="relative group flex-shrink-0 animate-scale-in">
+                    {f.type === 'image' ? (
+                       <div className="relative">
+                          <img src={`data:${f.mimeType};base64,${f.data}`} alt={f.name} className="h-20 w-auto rounded-lg border border-border object-cover shadow-sm" />
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setUploadedFiles(prev => prev.filter(x => x !== f)); }} 
+                            className="absolute -top-2 -right-2 bg-background border border-border rounded-full w-5 h-5 flex items-center justify-center text-[10px] hover:text-red-500 shadow-md transition-colors"
+                          >
+                            ✕
+                          </button>
+                       </div>
+                    ) : (
+                      <div className="bg-surface-hover px-3 py-2 rounded-lg border border-border text-xs text-secondary flex items-center gap-2 h-10">
+                        <span className="material-symbols-outlined text-[16px]">description</span>
+                        <span className="max-w-[100px] truncate">{f.name}</span>
+                        <button onClick={(e) => { e.stopPropagation(); setUploadedFiles(prev => prev.filter(x => x !== f)); }} className="hover:text-red-500 ml-1">×</button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1090,7 +1155,13 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
                 {/* Auto-Search Toggle (Optimization) */}
                 <button
-                  onClick={() => setAutoSearchEnabled(!autoSearchEnabled)}
+                  onClick={() => {
+                    const newValue = !autoSearchEnabled;
+                    setAutoSearchEnabled(newValue);
+                    if (newValue) {
+                         setWebSearchEnabled(false); // Mutual exclusion: Disable Web Search if Graph is active
+                    }
+                  }}
                   className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${autoSearchEnabled
                     ? 'text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20'
                     : 'text-tertiary hover:text-secondary hover:bg-surface-hover'
@@ -1107,7 +1178,13 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
                 {/* Google Search Grounding Toggle */}
                 <button
-                  onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                  onClick={() => {
+                    const newValue = !webSearchEnabled;
+                    setWebSearchEnabled(newValue);
+                    if (newValue) {
+                        setAutoSearchEnabled(false); // Mutual exclusion: Disable Graph Auto-Grounding if Web Search is active
+                    }
+                  }}
                   className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${webSearchEnabled
                     ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20'
                     : 'text-tertiary hover:text-secondary hover:bg-surface-hover'
