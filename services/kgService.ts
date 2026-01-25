@@ -36,7 +36,13 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
       const errorText = await response.text().catch(() => response.statusText);
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
-    return await response.json();
+    const text = await response.text();
+    try {
+      return text ? JSON.parse(text) : {} as T;
+    } catch {
+      // If parsing fails but response was ok, assume it's valid text or empty
+      return text as unknown as T;
+    }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw error;

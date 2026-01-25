@@ -4,6 +4,15 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
+// Debug log for production visibility
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.log('[Supabase Config] URL or Key missing. Env check:', {
+    hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
+    hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+    mode: import.meta.env.MODE
+  });
+}
+
 let supabase: SupabaseClient | null = null;
 
 export const getSupabaseClient = (): SupabaseClient | null => {
