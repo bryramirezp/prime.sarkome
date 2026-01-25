@@ -73,6 +73,47 @@ const RecoveryKeyModal: React.FC<RecoveryKeyModalProps> = ({ isOpen, onClose, da
     }, 1500);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate it's a JSON file
+    if (!file.name.endsWith('.json')) {
+      toast.error('Please upload a JSON file');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+        
+        // Validate JSON structure
+        if (!data.recoveryKey || !data.recoveryKey.startsWith('fp_')) {
+          toast.error('Invalid recovery key file');
+          return;
+        }
+
+        // Auto-fill the import field
+        setImportKey(data.recoveryKey);
+        toast.success('Recovery key loaded from file!');
+      } catch (error) {
+        toast.error('Failed to parse JSON file');
+      } finally {
+        e.target.value = ''; // Reset input
+      }
+    };
+
+    reader.onerror = () => {
+      toast.error('Failed to read file');
+      e.target.value = '';
+    };
+
+    reader.readAsText(file);
+  };
+
   const handleMarkAsSeen = () => {
     localStorage.setItem('primekg_has_seen_recovery_key', 'true');
     onClose();
@@ -133,7 +174,7 @@ const RecoveryKeyModal: React.FC<RecoveryKeyModalProps> = ({ isOpen, onClose, da
                     Important: Save This Key!
                   </p>
                   <p className={`text-xs ${darkMode ? 'text-amber-300/80' : 'text-amber-800'}`}>
-                    If you clear your browser data, you'll need this key to recover your chat history.
+                    This key will be activated in the cloud when you send your first chat message. If you clear your browser data later, you'll need this key to recover your chat history.
                   </p>
                 </div>
               </div>
@@ -212,7 +253,7 @@ const RecoveryKeyModal: React.FC<RecoveryKeyModalProps> = ({ isOpen, onClose, da
               <div className={`text-xs space-y-2 ${darkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
                 <p className="flex items-start gap-2">
                   <span className="material-symbols-outlined text-[16px] flex-shrink-0">info</span>
-                  <span>This key is stored in your browser's localStorage. Keep a backup in a safe place.</span>
+                  <span>This key is stored locally in your browser. It will sync to the cloud when you send your first chat message.</span>
                 </p>
                 <p className="flex items-start gap-2">
                   <span className="material-symbols-outlined text-[16px] flex-shrink-0">security</span>
@@ -241,6 +282,41 @@ const RecoveryKeyModal: React.FC<RecoveryKeyModalProps> = ({ isOpen, onClose, da
                 />
               </div>
 
+              {/* Divider with OR */}
+              <div className="relative">
+                <div className={`absolute inset-0 flex items-center ${darkMode ? 'text-zinc-600' : 'text-gray-300'}`}>
+                  <div className="w-full border-t border-current"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className={`px-2 ${darkMode ? 'bg-zinc-900 text-zinc-500' : 'bg-white text-gray-500'}`}>
+                    Or
+                  </span>
+                </div>
+              </div>
+
+              {/* Upload JSON button */}
+              <div>
+                <input
+                  type="file"
+                  id="json-file-upload"
+                  accept=".json"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="json-file-upload"
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all cursor-pointer border-2 border-dashed ${
+                    darkMode
+                      ? 'border-zinc-700 hover:border-indigo-500 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white'
+                      : 'border-gray-300 hover:border-indigo-500 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                  Upload JSON File
+                </label>
+              </div>
+
+              {/* Import button */}
               <button
                 onClick={handleImport}
                 disabled={!importKey.trim()}
@@ -259,7 +335,7 @@ const RecoveryKeyModal: React.FC<RecoveryKeyModalProps> = ({ isOpen, onClose, da
               <div className={`text-xs space-y-2 ${darkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
                 <p className="flex items-start gap-2">
                   <span className="material-symbols-outlined text-[16px] flex-shrink-0">info</span>
-                  <span>After importing, the page will reload and sync your chats from the cloud.</span>
+                  <span>Upload the JSON file you downloaded or paste the recovery key manually. After importing, the page will reload and sync your chats from the cloud.</span>
                 </p>
               </div>
             </>

@@ -27,3 +27,6 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 primekg-infra
+env.txt
+docSys
+supabase

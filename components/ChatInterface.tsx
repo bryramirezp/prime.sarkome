@@ -365,7 +365,8 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
       id: Date.now().toString(),
       role: 'user',
       content: displayContent,
-      timestamp: new Date()
+      timestamp: new Date(),
+      relatedData: uploadedFiles.length > 0 ? { files: uploadedFiles } : undefined
     };
 
     const newMessages = [...messages, userMsg];
@@ -627,7 +628,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
     localStorage.setItem('primekg_enhancer_prompt', newPrompt);
   };
 
-  const MAX_TOTAL_BYTES = 20 * 1024 * 1024; // Gemini default inline data limit
+  const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // 5MB limit for cloud sync optimization
 
 
   const readFileAsBase64 = (file: File, fileType: 'pdf' | 'image' | 'audio' | 'video' | 'text') =>
@@ -672,7 +673,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
     const incomingTotal = files.reduce((sum, f) => sum + f.size, 0);
 
     if (currentTotal + incomingTotal > MAX_TOTAL_BYTES) {
-      alert('Total attachments exceed 20MB, which is the default Gemini limit. Please remove some files or upload smaller ones.');
+      alert('Total attachments exceed 5MB. For cloud sync optimization, please keep files under 5MB total.');
       e.target.value = '';
       return;
     }
