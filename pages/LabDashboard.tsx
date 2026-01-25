@@ -7,7 +7,10 @@ import { useApiKey } from '../contexts/ApiKeyContext';
 import { LayoutContext } from '../components/Layout';
 import TechFooter from '../components/TechFooter';
 
+import { useHealth } from '../hooks/useKgQueries';
+
 export default function LabDashboard() {
+  const { data: health } = useHealth();
   const { isValid } = useApiKey();
   const { onShowApiKeyModal } = useOutletContext<LayoutContext>();
   const [showExperimentalMenu, setShowExperimentalMenu] = useState(false);
@@ -28,10 +31,19 @@ export default function LabDashboard() {
         <div className="mb-8 z-10">
           <div className="inline-flex items-center gap-2 backdrop-blur-md px-4 py-2 rounded-full border shadow-sm transition-colors bg-card/80 border-border">
             
-            {/* Graph Status - Always Connected */}
+            {/* Graph Status - Real Connection Check */}
             <div className="flex items-center gap-2 pr-3 border-r border-border">
               <span className="text-xs font-bold text-foreground tracking-wider">GRAPH</span>
-               <span className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Online</span>
+              {health?.status === 'ok' ? (
+                 <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-semibold animate-pulse">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    Online
+                 </span>
+              ) : health?.status === 'offline-mock' ? (
+                 <span className="text-amber-600 dark:text-amber-400 text-xs font-semibold">Mock Mode</span>
+              ) : (
+                 <span className="text-red-500 text-xs font-semibold">Offline</span>
+              )}
             </div>
 
             {/* AI Status - Depends on Key */}

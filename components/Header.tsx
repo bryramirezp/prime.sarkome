@@ -48,29 +48,39 @@ const Header: React.FC<HeaderProps> = ({
     showBackButton = false,
 }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+    const [isConfigDropdownOpen, setIsConfigDropdownOpen] = useState(false);
     const modelDropdownRef = useRef<HTMLDivElement>(null);
+    const configDropdownRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const isChat = location.pathname === '/chat';
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            // Check Model Dropdown
             if (
                 modelDropdownRef.current &&
                 !modelDropdownRef.current.contains(event.target as Node)
             ) {
                 setIsModelDropdownOpen(false);
             }
+            // Check Config Dropdown
+            if (
+                configDropdownRef.current &&
+                !configDropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsConfigDropdownOpen(false);
+            }
         };
 
-        if (isModelDropdownOpen) {
+        if (isModelDropdownOpen || isConfigDropdownOpen) {
             document.addEventListener('mousedown', handleClickOutside);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isModelDropdownOpen]);
+    }, [isModelDropdownOpen, isConfigDropdownOpen]);
 
     const handleModelSelect = (model: GeminiModel) => {
         onModelChange(model);
@@ -196,34 +206,71 @@ const Header: React.FC<HeaderProps> = ({
                 >
                     <span className="material-symbols-outlined text-[20px]">code</span>
                 </a>
-                <button 
-                    onClick={onShowApiKeyModal}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all border ${hasApiKey 
-                        ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20' 
-                        : 'text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
-                    }`} 
-                    title={hasApiKey ? "API Key Active - Click to Manage" : "API Key Missing - Click to Configure"}
-                >
-                    <span className="material-symbols-outlined text-[20px]">key</span>
-                </button>
-                {onShowRecoveryKey && (
+
+                {/* Unified Settings Menu */}
+                <div className="relative" ref={configDropdownRef}>
                     <button 
-                        onClick={onShowRecoveryKey}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all border text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20" 
-                        title="Recovery Key - Backup & Restore Your Chats"
+                        onClick={() => setIsConfigDropdownOpen(!isConfigDropdownOpen)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                            hasApiKey 
+                                ? 'bg-surface border-border text-foreground hover:bg-surface-hover hover:border-indigo-500/30' 
+                                : 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                        } ${isConfigDropdownOpen ? 'bg-surface-hover border-indigo-500/30' : ''}`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">vpn_key</span>
+                         <span className="material-symbols-outlined text-[18px]">tune</span>
+                         <span className="text-xs font-semibold">Config</span>
                     </button>
-                )}
-                {onToggleDarkMode && (
-                    <button 
-                        onClick={onToggleDarkMode}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors border border-transparent hover:border-purple-500/20" 
-                        title="Toggle terminal mode"
-                    >
-                        <span className="material-symbols-outlined text-[20px]">dark_mode</span>
-                    </button>
-                )}
+
+                     {/* Dropdown */}
+                    {isConfigDropdownOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                            <div className="p-1.5 space-y-0.5">
+                                <button 
+                                    onClick={() => { onShowApiKeyModal(); setIsConfigDropdownOpen(false); }}
+                                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-hover text-left transition-colors group/item"
+                                >
+                                    <div className={`p-1.5 rounded-md ${hasApiKey ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        <span className="material-symbols-outlined text-[16px]">key</span>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-foreground">API Keys</div>
+                                        <div className="text-[10px] text-muted-foreground">{hasApiKey ? 'Connected' : 'Missing Key'}</div>
+                                    </div>
+                                </button>
+
+                                {onShowRecoveryKey && (
+                                    <button 
+                                        onClick={() => { onShowRecoveryKey(); setIsConfigDropdownOpen(false); }}
+                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-hover text-left transition-colors group/item"
+                                    >
+                                        <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500">
+                                             <span className="material-symbols-outlined text-[16px]">vpn_key</span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-foreground">Backup</div>
+                                            <div className="text-[10px] text-muted-foreground">Recovery Key</div>
+                                        </div>
+                                    </button>
+                                )}
+                                
+                                {onToggleDarkMode && (
+                                    <button 
+                                        onClick={() => { onToggleDarkMode(); setIsConfigDropdownOpen(false); }}
+                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-hover text-left transition-colors group/item"
+                                    >
+                                        <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500">
+                                             <span className="material-symbols-outlined text-[16px]">dark_mode</span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-foreground">Theme</div>
+                                            <div className="text-[10px] text-muted-foreground">{darkMode ? 'Dark Mode' : 'Light Mode'}</div>
+                                        </div>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </header>
     );};
