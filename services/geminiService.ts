@@ -761,8 +761,21 @@ ${toolContext}` : ''}`,
       usage: { promptTokens: totalPromptTokens, completionTokens: totalCandidateTokens }
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Interaction Error:", error);
-    return { text: "I encountered an error connecting to the Precision Medicine Engine. Please try again or switch models." };
+
+    // Check for Rate Limits (429 / Resource Exhausted)
+    const errString = JSON.stringify(error, Object.getOwnPropertyNames(error)) + (error.message || '');
+    if (errString.includes('429') || errString.includes('Quota exceeded') || errString.includes('RESOURCE_EXHAUSTED')) {
+      return {
+        text: "⚠️ **Google Gemini API Quota Exceeded**\n\n" +
+              "You have hit the free tier rate limits for the Gemini API. " +
+              "This is a restriction from Google, not PrimeKG.\n\n" +
+              "**Please wait about 30-60 seconds and try again.**\n\n" +
+              "If this persists, consider checking your [Google Cloud Console](https://console.cloud.google.com/apis/dashboard) or upgrading your plan."
+      };
+    }
+
+    return { text: "I encountered an error connecting to the Precision Medicine Engine. Please check your connection and try again." };
   }
 };

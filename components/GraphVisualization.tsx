@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useImperativeHandle } from 'react';
 import * as d3 from 'd3';
 import { GraphData, KGNode, KGEdge } from '../types';
 
@@ -141,18 +141,26 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     target: string | SimNode;
 }
 
-const GraphVisualization = React.memo(function GraphVisualization({
-    data,
-    darkMode = true,
-    width = 600,
-    height = 400,
-    className = "",
-    onNodeClick,
-    onReset,
-    selectedNodeId,
-    highlightedEdges,
-    children
-}: GraphVisualizationProps & { selectedNodeId?: string, highlightedEdges?: Set<string>, children?: React.ReactNode }) {
+export interface GraphVisualizationHandle {
+    zoomIn: () => void;
+    zoomOut: () => void;
+    reset: () => void;
+    toggleFullscreen: () => void;
+}
+
+const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle, GraphVisualizationProps & { selectedNodeId?: string, highlightedEdges?: Set<string>, children?: React.ReactNode }>(
+    function GraphVisualization({
+        data,
+        darkMode = true,
+        width = 600,
+        height = 400,
+        className = "",
+        onNodeClick,
+        onReset,
+        selectedNodeId,
+        highlightedEdges,
+        children
+    }, ref) {
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const simulationRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
@@ -185,6 +193,33 @@ const GraphVisualization = React.memo(function GraphVisualization({
             setIsFullscreen(!isFullscreen);
         }
     }, [isFullscreen]);
+
+    // Zoom Controls
+    const handleZoomIn = () => {
+        if (svgRef.current && zoomRef.current) {
+            d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 1.2);
+        }
+    };
+
+    const handleZoomOut = () => {
+        if (svgRef.current && zoomRef.current) {
+            d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 0.8);
+        }
+    };
+
+    const handleReset = () => {
+        if (svgRef.current && zoomRef.current) {
+            d3.select(svgRef.current).transition().duration(750).call(zoomRef.current.transform, d3.zoomIdentity);
+        }
+    };
+
+    // Expose controls to parent
+    useImperativeHandle(ref, () => ({
+        zoomIn: handleZoomIn,
+        zoomOut: handleZoomOut,
+        reset: handleReset,
+        toggleFullscreen
+    }));
 
     // Handle resize observer
     useEffect(() => {
@@ -566,25 +601,6 @@ const GraphVisualization = React.memo(function GraphVisualization({
         }
     }, [activeNodeId, darkMode]);
 
-    // Zoom Controls
-    const handleZoomIn = () => {
-        if (svgRef.current && zoomRef.current) {
-            d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 1.2);
-        }
-    };
-
-    const handleZoomOut = () => {
-        if (svgRef.current && zoomRef.current) {
-            d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 0.8);
-        }
-    };
-
-    const handleReset = () => {
-        if (svgRef.current && zoomRef.current) {
-            d3.select(svgRef.current).transition().duration(750).call(zoomRef.current.transform, d3.zoomIdentity);
-        }
-    };
-
     if (!data.nodes?.length) return null;
 
     return (
@@ -593,44 +609,6 @@ const GraphVisualization = React.memo(function GraphVisualization({
             className={`relative rounded-xl overflow-hidden border transition-all duration-300 bg-background border-border ${isFullscreen ? 'fixed inset-0 z-50 w-full h-full rounded-none' : `w-full h-full ${className}`}`}
             style={isFullscreen ? { height: '100vh', width: '100vw' } : { height: '100%', width: '100%' }}
         >
-            {/* Floating Toolbar (Zoom/Fullscreen) */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                <div className={`flex flex-col items-center gap-1 p-1 rounded-lg border backdrop-blur-md shadow-lg bg-surface/90 border-border`}>
-                    <button onClick={handleZoomIn} className={`p-2 rounded-md transition-colors hover:bg-surface-hover text-tertiary hover:text-indigo-600`} title="Zoom In">
-                        <span className="material-symbols-outlined text-[20px]">add</span>
-                    </button>
-                    <button onClick={handleZoomOut} className={`p-2 rounded-md transition-colors hover:bg-surface-hover text-tertiary hover:text-indigo-600`} title="Zoom Out">
-                        <span className="material-symbols-outlined text-[20px]">remove</span>
-                    </button>
-                    <div className={`w-4 h-px my-0.5 bg-border`}></div>
-                    <button onClick={handleReset} className={`p-2 rounded-md transition-colors hover:bg-surface-hover text-tertiary hover:text-indigo-600`} title="Reset View">
-                        <span className="material-symbols-outlined text-[20px]">center_focus_strong</span>
-                    </button>
-                    {onReset && (
-                        <>
-                            <div className={`w-4 h-px my-0.5 bg-border`}></div>
-                            <button 
-                                onClick={onReset} 
-                                className={`p-2 rounded-md transition-colors hover:bg-red-500/10 text-tertiary hover:text-red-500`} 
-                                title="Clear Graph (Reset)"
-                            >
-                                <span className="material-symbols-outlined text-[20px]">delete_forever</span>
-                            </button>
-                        </>
-                    )}
-                </div>
-
-                <button 
-                    onClick={toggleFullscreen} 
-                    className={`p-2 rounded-lg border backdrop-blur-md shadow-lg transition-all bg-surface/90 border-border text-tertiary hover:text-indigo-600 hover:bg-surface-hover`}
-                    title="Toggle Fullscreen"
-                >
-                    <span className="material-symbols-outlined text-[20px]">
-                        {isFullscreen ? 'close_fullscreen' : 'open_in_full'}
-                    </span>
-                </button>
-            </div>
-
             {/* Legend Overlay */}
             <div className={`absolute bottom-4 left-4 z-10 flex flex-wrap gap-2 p-3 rounded-xl max-w-[90%] md:max-w-[70%] text-xs border backdrop-blur-md shadow-lg bg-surface/90 border-border`}>
                 {Array.from(new Set(data.nodes.map(n => n.type ? (n.type.charAt(0).toUpperCase() + n.type.slice(1).toLowerCase()) : 'Unknown')))
@@ -666,6 +644,6 @@ const GraphVisualization = React.memo(function GraphVisualization({
 
         </div>
     );
-});
+}));
 
 export default GraphVisualization;
