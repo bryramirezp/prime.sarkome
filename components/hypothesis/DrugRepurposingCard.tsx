@@ -18,9 +18,9 @@ const DrugRepurposingCard: React.FC<Props> = ({ data, isLoading, onVisualize }) 
                     </div>
                     <h3 className="font-bold text-primary">Drug Repurposing</h3>
                 </div>
-                {data?.candidates && (
+                {data && (
                     <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
-                        {data.candidates.length} candidates
+                        {data.length} candidates
                     </div>
                 )}
             </div>
@@ -32,25 +32,25 @@ const DrugRepurposingCard: React.FC<Props> = ({ data, isLoading, onVisualize }) 
                         <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
                         <div className="text-xs text-indigo-400 font-mono">Scanning FDA database...</div>
                     </div>
-                ) : data?.candidates && data.candidates.length > 0 ? (
+                ) : data && data.length > 0 ? (
                     <div className="space-y-2">
-                        {data.candidates.map((item, i) => (
+                        {data.map((item, i) => (
                             <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-indigo-500/20 rounded-lg p-3 transition-all group/item">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="font-bold text-sm text-primary flex items-center gap-2">
                                             {item.drug}
-                                            {item.score > 0.8 && (
+                                            {(item.score || 0) > 0.8 && (
                                                 <span className="text-[9px] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded font-mono uppercase tracking-wide">High Confidence</span>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-3 mt-1.5">
                                             <div className="text-[10px] text-tertiary">
-                                                Match Score: <span className="font-mono text-primary font-bold">{item.score.toFixed(2)}</span>
+                                                Match Score: <span className="font-mono text-primary font-bold">{(item.score || 0).toFixed(2)}</span>
                                             </div>
-                                            {item.mechanism_strength && (
+                                            {item.original_indication && (
                                                 <div className="text-[10px] text-tertiary border-l border-border pl-3">
-                                                    MoA Strength: <span className="font-mono text-indigo-400 font-bold">{(item.mechanism_strength * 100).toFixed(0)}%</span>
+                                                    Indication: <span className="text-indigo-400">{item.original_indication}</span>
                                                 </div>
                                             )}
                                         </div>

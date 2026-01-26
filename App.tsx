@@ -8,7 +8,6 @@ import GraphExplorer from './components/GraphExplorer';
 import { useHealth } from './hooks/useKgQueries';
 import DocsPage from './pages/DocsPage';
 import FaqPage from './pages/FaqPage';
-import ProjectsPage from './pages/ProjectsPage';
 import LabDashboard from './pages/LabDashboard';
 import HypothesisSimulator from './pages/HypothesisSimulator';
 import HypothesisHub from './pages/HypothesisHub';
@@ -16,7 +15,6 @@ import MolecularSim from './pages/MolecularSim';
 
 import { useApiKey } from './contexts/ApiKeyContext';
 import { useChatSessions } from './hooks/useChatSessions';
-import { useProjects } from './hooks/useProjects';
 
 /**
  * Main application component.
@@ -38,8 +36,6 @@ function App() {
     deleteAll,
     saveCurrentSession,
   } = useChatSessions();
-
-  const projectsHook = useProjects();
 
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -93,7 +89,6 @@ function App() {
               onSessionPin={pinSession}
               onDeleteAll={deleteAll}
               isOffline={isOffline}
-              projectsHook={projectsHook}
             />
           }
         >
@@ -129,8 +124,7 @@ function App() {
           {/* Statistics page */}
           <Route path="/stats" element={<StatsPage darkMode={darkMode} />} />
 
-          {/* Projects page */}
-          <Route path="/projects" element={<ProjectsPage />} />
+
 
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

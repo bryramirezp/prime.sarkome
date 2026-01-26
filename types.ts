@@ -54,20 +54,33 @@ export interface Stats {
 }
 
 // Response types from PrimeKG API
-export interface DrugRepurposingResponse {
-  disease: string;
-  candidates: Array<{ drug: string; score: number; mechanism_strength?: number }>;
-}
-
-export interface TherapeuticTargetsResponse {
-  disease: string;
-  targets: Array<{ gene: string; score: number; evidence_count?: number }>;
-}
-
-export interface DrugCombinationsResponse {
+export interface DrugCandidate {
   drug: string;
-  combinations: Array<{ drug: string; score: number; synergy?: number }>;
+  original_indication: string;
+  shared_target: string;
+  confidence: string;
+  is_off_label: boolean;
+  score?: number;
 }
+
+export type DrugRepurposingResponse = DrugCandidate[];
+
+export interface TherapeuticTarget {
+  gene: string;
+  score: number;
+  evidence_count?: number;
+  uniprot_id?: string;
+}
+
+export type TherapeuticTargetsResponse = TherapeuticTarget[];
+
+export interface DrugCombination {
+  drug: string;
+  score: number;
+  synergy?: number;
+}
+
+export type DrugCombinationsResponse = DrugCombination[];
 
 export interface PhenotypeCandidate {
   drug: string;
@@ -75,10 +88,7 @@ export interface PhenotypeCandidate {
   overlap_score: number;
 }
 
-export interface PhenotypeMatchingResponse {
-  disease: string;
-  candidates: PhenotypeCandidate[];
-}
+export type PhenotypeMatchingResponse = PhenotypeCandidate[];
 
 export interface EnvironmentalRisk {
   exposure: string;
@@ -87,7 +97,4 @@ export interface EnvironmentalRisk {
   evidence_score?: number;
 }
 
-export interface EnvironmentalRiskResponse {
-  disease: string;
-  risks: EnvironmentalRisk[];
-}
+export type EnvironmentalRiskResponse = EnvironmentalRisk[];

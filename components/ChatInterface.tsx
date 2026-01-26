@@ -19,8 +19,7 @@ import SuggestedQuestions from './SuggestedQuestions';
 import ToolExecutionChips from './ToolExecutionChips';
 import HypothesisCards from './HypothesisCards';
 import EntityMention from './EntityMention';
-import SaveToProjectButton from './SaveToProjectButton';
-import { useProjects } from '../hooks/useProjects';
+import MermaidDiagram from './MermaidDiagram';
 
 // Model icon component
 const ModelIcon: React.FC<{ model: GeminiModel; className?: string }> = ({ model, className = "w-4 h-4" }) => {
@@ -203,8 +202,6 @@ interface ChatInterfaceProps {
   darkMode?: boolean;
   /** Currently selected AI model */
   selectedModel: GeminiModel;
-  /** Projects hook for saving items */
-  projectsHook?: ReturnType<typeof useProjects>;
 }
 
 /**
@@ -217,7 +214,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isOffline = false,
   darkMode = false,
   selectedModel,
-  projectsHook,
 }) => {
   const markdownComponents = {
     table: ({ children }: any) => (
@@ -234,9 +230,36 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     td: ({ children }: any) => (
       <td className="align-top px-3 py-2 border border-border text-foreground">{children}</td>
     ),
-    code: ({ children }: any) => (
-      <code className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[0.9em]">{children}</code>
-    ),
+    code: ({ node, inline, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const content = String(children).replace(/\n$/, '');
+      
+      // Check for mermaid explicitly or by content heuristic
+      const isMermaid = match && match[1] === 'mermaid';
+      const isMermaidHeuristic = !inline && (
+        content.trim().startsWith('graph ') || 
+        content.trim().startsWith('sequenceDiagram') ||
+        content.trim().startsWith('gantt') ||
+        content.trim().startsWith('classDiagram') ||
+        content.trim().startsWith('pie') ||
+        content.trim().startsWith('flowchart')
+      );
+
+      if (!inline && (isMermaid || isMermaidHeuristic)) {
+        return <MermaidDiagram code={content} darkMode={darkMode} />;
+      }
+      
+      return (
+        <code 
+          className={match 
+            ? "px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[0.9em] block whitespace-pre overflow-x-auto" 
+            : "px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[0.9em]"}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
     a: ({ href, children }: any) => (
       <a
         href={href}
@@ -922,7 +945,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
         ) : (
           /* Chat History */
-          <div className="max-w-3xl w-full mx-auto space-y-6">
+          <div className="max-w-3xl w-full mx-auto space-y-6 pt-6">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in group`}>
                 <div className={`max-w-[85%] space-y-1 ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
@@ -948,7 +971,9 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                             )
                           } as any}
                         >
-                          {msg.content}
+                          {msg.role === 'model' 
+                            ? msg.content.replace(/\[\s*\]/g, '[Beep Boop. Nothing was found]') 
+                            : msg.content}
                         </ReactMarkdown>
 
                         {/* Hypothesis Cards - Visual representation of drug repurposing, targets, combinations */}
@@ -963,9 +988,9 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
 
                         {/* Graph Visualization - Only show if relatedData has nodes (not hypothesis data) */}
                         {msg.relatedData && msg.relatedData.nodes && msg.relatedData.nodes.length > 0 ? (
-                          <div className="mt-4">
+                          <div className="mt-4 w-full h-[500px]">
                             <React.Suspense fallback={
-                              <div className="w-full h-[400px] bg-white/50 dark:bg-black/20 rounded-xl animate-pulse flex items-center justify-center border border-border/50">
+                              <div className="w-full h-full bg-white/50 dark:bg-black/20 rounded-xl animate-pulse flex items-center justify-center border border-border/50">
                                 <div className="flex flex-col items-center gap-2 text-tertiary">
                                   <span className="material-symbols-outlined text-3xl animate-spin">cyclone</span>
                                   <span className="text-xs font-medium">Loading visualization...</span>
@@ -1028,25 +1053,7 @@ Keep the enhanced prompt concise but comprehensive. Output ONLY the enhanced pro
                     )}
                   </div>
 
-                  {/* Save to Project Button - only for model messages */}
-                  {msg.role !== 'user' && projectsHook && (
-                    <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <SaveToProjectButton
-                        itemType="message"
-                        itemName={`Response: ${msg.content.substring(0, 50)}...`}
-                        itemData={{
-                          content: msg.content,
-                          relatedData: msg.relatedData,
-                          trace: msg.trace,
-                          timestamp: msg.timestamp
-                        }}
-                        projects={projectsHook.projects}
-                        onSaveToProject={projectsHook.addItemToProject}
-                        onCreateProject={projectsHook.createProject}
-                        darkMode={darkMode}
-                      />
-                    </div>
-                  )}
+
                 </div>
               </div>
             ))}

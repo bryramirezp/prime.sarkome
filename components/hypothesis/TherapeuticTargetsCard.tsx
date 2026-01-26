@@ -17,9 +17,9 @@ const TherapeuticTargetsCard: React.FC<Props> = ({ data, isLoading, onVisualize 
                     </div>
                     <h3 className="font-bold text-primary">Therapeutic Targets</h3>
                 </div>
-                 {data?.targets && (
+                 {data && (
                     <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
-                        {data.targets.length} targets
+                        {data.length} targets
                     </div>
                 )}
             </div>
@@ -30,9 +30,9 @@ const TherapeuticTargetsCard: React.FC<Props> = ({ data, isLoading, onVisualize 
                         <div className="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
                         <div className="text-xs text-emerald-400 font-mono">Identifying gene targets...</div>
                     </div>
-                ) : data?.targets && data.targets.length > 0 ? (
+                ) : data && data.length > 0 ? (
                     <div className="space-y-2">
-                        {data.targets.map((item, i) => (
+                        {data.map((item, i) => (
                             <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-emerald-500/20 rounded-lg p-3 transition-all group/item">
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
@@ -40,11 +40,11 @@ const TherapeuticTargetsCard: React.FC<Props> = ({ data, isLoading, onVisualize 
                                             {item.gene}
                                         </div>
                                         <div className="text-[10px] text-tertiary mt-1">
-                                            Evidence Score: <span className="font-mono text-primary font-bold">{item.score.toFixed(3)}</span> • {item.evidence_count} sources
+                                            Evidence Score: <span className="font-mono text-primary font-bold">{(item.score || 0).toFixed(3)}</span> • {item.evidence_count || 0} sources
                                         </div>
                                     </div>
                                     <div className="w-16 h-1 bg-surface-hover rounded-full overflow-hidden mr-3">
-                                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400" style={{ width: `${item.score * 100}%` }} />
+                                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400" style={{ width: `${(item.score || 0) * 100}%` }} />
                                     </div>
                                     {onVisualize && (
                                         <button 

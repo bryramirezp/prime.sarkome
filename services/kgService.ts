@@ -96,24 +96,21 @@ export const kgService = {
   getDrugRepurposing: (disease: string, signal?: AbortSignal) => 
     fetchAPIOrDefault<DrugRepurposingResponse>(
       `/hypothesis/repurposing/${encodeURIComponent(disease)}`, 
-      // @ts-ignore - aligning with backend list response or frontend object expectations dynamically
-      [] as any, 
+      [], 
       { signal }
     ),
 
   getTherapeuticTargets: (disease: string, signal?: AbortSignal) => 
     fetchAPIOrDefault<TherapeuticTargetsResponse>(
       `/hypothesis/targets/${encodeURIComponent(disease)}`, 
-      // @ts-ignore
-      [] as any,
+      [],
       { signal }
     ),
 
   getDrugCombinations: (drug: string, signal?: AbortSignal) => 
     fetchAPIOrDefault<DrugCombinationsResponse>(
       `/hypothesis/combinations/${encodeURIComponent(drug)}`, 
-      // @ts-ignore
-      [] as any,
+      [],
       { signal }
     ),
 
@@ -127,16 +124,14 @@ export const kgService = {
   getPhenotypeMatching: (disease: string, signal?: AbortSignal) =>
     fetchAPIOrDefault<PhenotypeMatchingResponse>(
       `/hypothesis/phenotypes/${encodeURIComponent(disease)}`, 
-      // @ts-ignore
-      [] as any,
+      [],
       { signal }
     ),
 
   getEnvironmentalRisks: (disease: string, signal?: AbortSignal) =>
     fetchAPIOrDefault<EnvironmentalRiskResponse>(
       `/risk/environmental/${encodeURIComponent(disease)}`, 
-      // @ts-ignore
-      [] as any,
+      [],
       { signal }
     ),
 

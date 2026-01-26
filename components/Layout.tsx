@@ -7,7 +7,6 @@ import ApiKeyModal from './ApiKeyModal';
 import RecoveryKeyModal from './RecoveryKeyModal';
 import { GeminiModel } from '../types';
 import { ChatSession } from '../schemas/sessionSchema';
-import { useProjects } from '../hooks/useProjects';
 import { useApiKey } from '../contexts/ApiKeyContext';
 
 /**
@@ -25,7 +24,6 @@ export interface LayoutProps {
     onSessionPin: (sessionId: string, pinned: boolean) => void;
     onDeleteAll: () => void;
     isOffline?: boolean;
-    projectsHook: ReturnType<typeof useProjects>;
 }
 
 /**
@@ -43,7 +41,6 @@ const Layout: React.FC<LayoutProps> = ({
     onSessionRename,
     onSessionPin,
     onDeleteAll,
-    projectsHook,
 }) => {
     const { isValid, clearApiKey } = useApiKey();
     const location = useLocation();
@@ -148,7 +145,6 @@ const Layout: React.FC<LayoutProps> = ({
                     collapsed={sidebarCollapsed}
                     onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
                     showOnDesktop={isChatPage}
-                    projectsHook={projectsHook}
                 />
 
                 {/* Page content */}
@@ -160,7 +156,6 @@ const Layout: React.FC<LayoutProps> = ({
                             selectedModel,
                             onShowApiKeyModal: () => setShowApiKeyModal(true),
                             isOffline: false,
-                            projectsHook,
                         }}
                     />
                 </div>
@@ -175,7 +170,6 @@ export interface LayoutContext {
     selectedModel: GeminiModel;
     onShowApiKeyModal: () => void;
     isOffline: boolean;
-    projectsHook: ReturnType<typeof useProjects>;
 }
 
 export default Layout;

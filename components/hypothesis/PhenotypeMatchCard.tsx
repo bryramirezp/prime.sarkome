@@ -17,9 +17,9 @@ const PhenotypeMatchCard: React.FC<Props> = ({ data, isLoading, onVisualize }) =
                     </div>
                     <h3 className="font-bold text-primary">Phenotype Matching</h3>
                 </div>
-                 {data?.candidates && (
+                 {data && (
                     <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
-                        {data.candidates.length} matches
+                        {data.length} matches
                     </div>
                 )}
             </div>
@@ -30,9 +30,9 @@ const PhenotypeMatchCard: React.FC<Props> = ({ data, isLoading, onVisualize }) =
                         <div className="w-6 h-6 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
                         <div className="text-xs text-orange-400 font-mono">Comparing phenotypes...</div>
                     </div>
-                ) : data?.candidates && data.candidates.length > 0 ? (
+                ) : data && data.length > 0 ? (
                     <div className="space-y-2">
-                        {data.candidates.map((item, i) => (
+                        {data.map((item, i) => (
                             <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-orange-500/20 rounded-lg p-3 transition-all group/item">
                                 <div className="flex flex-col gap-2">
                                      <div className="flex items-center justify-between">

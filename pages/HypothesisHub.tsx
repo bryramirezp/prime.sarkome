@@ -34,52 +34,152 @@ const HypothesisHub: React.FC = () => {
 
         setIsLoading(true);
         setResults(null);
-        let targetTerm = disease.trim();
+        const originalTerm = disease.trim();
+        let targetTerm = originalTerm;
+        let groundedTerm: string | null = null;
 
         try {
             // STEP 1: Attempt Semantic Grounding first
-            // This prevents 404s by resolving "breast cancer" -> "Malignant neoplasm of breast"
             try {
-                const searchResults = await kgService.searchSemantic(targetTerm);
+                console.log(`[Hypothesis] Starting semantic search for: "${originalTerm}"`);
+                const searchResults = await kgService.searchSemantic(originalTerm);
+                
                 if (searchResults && searchResults.length > 0) {
-                     // Prefer the top match if it's a disease or close match
                      const bestMatch = searchResults[0];
-                     if(bestMatch.name && bestMatch.name.toLowerCase() !== targetTerm.toLowerCase()) {
-                        console.log(`[Hypothesis] Grounding term: "${targetTerm}" -> "${bestMatch.name}"`);
+                     console.log(`[Hypothesis] Top match:`, bestMatch);
+                     
+                     if(bestMatch.name && bestMatch.name.toLowerCase() !== originalTerm.toLowerCase()) {
+                        console.log(`[Hypothesis] Grounding term: "${originalTerm}" -> "${bestMatch.name}"`);
+                        groundedTerm = bestMatch.name;
                         targetTerm = bestMatch.name;
-                        toast.success(`Resolved to: ${bestMatch.name}`, { icon: '🎯' });
+                        toast.success(`Resolved to: ${bestMatch.name}`, { icon: '🎯', duration: 3000 });
                      }
                 }
             } catch (searchErr) {
-                console.warn("Semantic grounding skipped/failed, using raw term.", searchErr);
+                console.warn("[Hypothesis] Semantic grounding failed, using raw term.", searchErr);
             }
 
-            // STEP 2: Run all analyses in parallel using the (potentially grounded) term
-            const [repurposing, targets, phenotypes, risks] = await Promise.all([
-                kgService.getDrugRepurposing(targetTerm).catch(() => undefined),
-                kgService.getTherapeuticTargets(targetTerm).catch(() => undefined),
-                kgService.getPhenotypeMatching(targetTerm).catch(() => undefined),
-                kgService.getEnvironmentalRisks(targetTerm).catch(() => undefined)
+            // Helper function to extract general disease category
+            const extractGeneralTerm = (term: string): string | null => {
+                // Remove specific variants/subtypes
+                const patterns = [
+                    /, .+$/,  // Remove everything after comma (e.g., "sarcoma, inflammatory variant" -> "sarcoma")
+                    / \(.+\)$/,  // Remove parenthetical info
+                    /^undifferentiated /i,  // Remove "undifferentiated"
+                    /^pleomorphic /i,  // Remove "pleomorphic"
+                    /^malignant /i,  // Remove "malignant"
+                ];
+                
+                let general = term;
+                for (const pattern of patterns) {
+                    general = general.replace(pattern, '').trim();
+                }
+                
+                // If we extracted something shorter and meaningful, return it
+                if (general.length > 3 && general.length < term.length) {
+                    return general;
+                }
+                
+                return null;
+            };
+
+            // STEP 2: First attempt with grounded/original term
+            console.log(`[Hypothesis] Querying APIs with term: "${targetTerm}"`);
+            let [repurposing, targets, phenotypes, risks] = await Promise.all([
+                kgService.getDrugRepurposing(targetTerm).catch((err) => {
+                    console.warn(`[Hypothesis] Repurposing failed for "${targetTerm}":`, err);
+                    return undefined;
+                }),
+                kgService.getTherapeuticTargets(targetTerm).catch((err) => {
+                    console.warn(`[Hypothesis] Targets failed for "${targetTerm}":`, err);
+                    return undefined;
+                }),
+                kgService.getPhenotypeMatching(targetTerm).catch((err) => {
+                    console.warn(`[Hypothesis] Phenotypes failed for "${targetTerm}":`, err);
+                    return undefined;
+                }),
+                kgService.getEnvironmentalRisks(targetTerm).catch((err) => {
+                    console.warn(`[Hypothesis] Risks failed for "${targetTerm}":`, err);
+                    return undefined;
+                })
             ]);
 
-            setResults({
-                repurposing, 
-                targets, 
-                phenotypes, 
-                risks
+            // Helper to check if we have any actual data
+            const hasData = (r: any, t: any, p: any, e: any) => 
+                (r && Array.isArray(r) && r.length > 0) || 
+                (t && Array.isArray(t) && t.length > 0) || 
+                (p && Array.isArray(p) && p.length > 0) || 
+                (e && Array.isArray(e) && e.length > 0);
+
+            // STEP 3: If no results, try with original term (if different from grounded)
+            if (groundedTerm && !hasData(repurposing, targets, phenotypes, risks)) {
+                console.log(`[Hypothesis] No results with grounded term. Retrying with original: "${originalTerm}"`);
+                toast.loading(`Trying original term...`, { duration: 1500 });
+                
+                [repurposing, targets, phenotypes, risks] = await Promise.all([
+                    kgService.getDrugRepurposing(originalTerm).catch(() => undefined),
+                    kgService.getTherapeuticTargets(originalTerm).catch(() => undefined),
+                    kgService.getPhenotypeMatching(originalTerm).catch(() => undefined),
+                    kgService.getEnvironmentalRisks(originalTerm).catch(() => undefined)
+                ]);
+                
+                if (hasData(repurposing, targets, phenotypes, risks)) {
+                    targetTerm = originalTerm;
+                }
+            }
+
+            // STEP 4: If still no results, try with general disease category
+            if (!hasData(repurposing, targets, phenotypes, risks)) {
+                const generalTerm = extractGeneralTerm(targetTerm);
+                
+                if (generalTerm && generalTerm !== targetTerm) {
+                    console.log(`[Hypothesis] No results found. Trying general category: "${generalTerm}"`);
+                    toast.loading(`Trying general category: ${generalTerm}...`, { duration: 2000 });
+                    
+                    [repurposing, targets, phenotypes, risks] = await Promise.all([
+                        kgService.getDrugRepurposing(generalTerm).catch(() => undefined),
+                        kgService.getTherapeuticTargets(generalTerm).catch(() => undefined),
+                        kgService.getPhenotypeMatching(generalTerm).catch(() => undefined),
+                        kgService.getEnvironmentalRisks(generalTerm).catch(() => undefined)
+                    ]);
+                    
+                    if (hasData(repurposing, targets, phenotypes, risks)) {
+                        targetTerm = generalTerm;
+                        toast.success(`Found results for general category: ${generalTerm}`, { icon: '🔍', duration: 4000 });
+                    }
+                }
+            }
+
+            // Log results for debugging
+            console.log('[Hypothesis] Results:', {
+                repurposing: repurposing ? `${Array.isArray(repurposing) ? repurposing.length : 'object'} items` : 'none',
+                targets: targets ? `${Array.isArray(targets) ? targets.length : 'object'} items` : 'none',
+                phenotypes: phenotypes ? `${Array.isArray(phenotypes) ? phenotypes.length : 'object'} items` : 'none',
+                risks: risks ? `${Array.isArray(risks) ? risks.length : 'object'} items` : 'none'
             });
 
-            if(!repurposing && !targets && !phenotypes && !risks) {
-                 toast('No significant signals found for this entity name.', { icon: '🔍' });
+            setResults({
+                repurposing: repurposing as any, 
+                targets: targets as any, 
+                phenotypes: phenotypes as any, 
+                risks: risks as any
+            });
+
+            if(!hasData(repurposing, targets, phenotypes, risks)) {
+                 console.warn(`[Hypothesis] No results found for any endpoint with term: "${targetTerm}"`);
+                 toast.error(
+                     `No biomedical signals found. The backend may not have pre-computed data for "${originalTerm}". Try a more common disease.`, 
+                     { duration: 6000 }
+                 );
             } else {
                  toast.success(`Analysis complete for ${targetTerm}`);
-                 // Update input to reflect what was actually analyzed (optional UX choice, usually good)
+                 // Update input to reflect what was actually analyzed
                  setDisease(targetTerm);
             }
 
         } catch (err) {
-            console.error("Analysis Hub error:", err);
-            toast.error("Failed to aggregate hypothesis data.");
+            console.error("[Hypothesis] Analysis Hub error:", err);
+            toast.error("Failed to aggregate hypothesis data. Check console for details.");
         } finally {
             setIsLoading(false);
         }

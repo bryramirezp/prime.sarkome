@@ -363,7 +363,7 @@ const HypothesisCards: React.FC<HypothesisCardsProps> = ({
             </div>
 
             {/* Cards Grid */}
-            <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 gap-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                 {data.map((item, index) => {
                     if (type === 'repurposing') {
                         return renderRepurposingCard(item as RepurposingCandidate, index);

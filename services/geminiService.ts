@@ -182,7 +182,7 @@ const getLiteratureDecl: FunctionDeclaration = {
 export const TOKEN_OPTIMIZATION_CONFIG = {
   MAX_HISTORY_MESSAGES: 10,
   MAX_MESSAGE_LENGTH: 2000,
-  MAX_TOOL_RESPONSE_ITEMS: 25,
+  MAX_TOOL_RESPONSE_ITEMS: 50, // Increased for meaningful graph visualizations
   INCLUDE_HISTORY_SUMMARY: true,
 };
 
@@ -257,9 +257,10 @@ function truncateToolResponse(
     if (result.nodes.length <= maxItems) return result;
 
     const truncatedNodes = result.nodes.slice(0, maxItems);
-    const nodeIds = new Set(truncatedNodes.map((n: any) => n.id));
+    // Backend uses 'name' as the identifier in edges, not 'id'
+    const nodeNames = new Set(truncatedNodes.map((n: any) => n.name || n.id || n.db_id));
     const truncatedEdges = (result.edges || [])
-      .filter((e: any) => nodeIds.has(e.source) && nodeIds.has(e.target))
+      .filter((e: any) => nodeNames.has(e.source) && nodeNames.has(e.target))
       .slice(0, maxItems * 2);
 
     return {
@@ -404,6 +405,49 @@ Use the available tools (searchSemantic, getNeighbors, etc.) to query the graph.
 `;
   }
 
+  // --- Model-Specific Intelligence Enhancements ---
+  let modelEnhancements = "";
+  
+  if (modelName === GeminiModel.FLASH_2_0_EXP) {
+    // Gemini 2.0 Flash: Maximum intelligence mode
+    modelEnhancements = `
+## ADVANCED REASONING (Gemini 2.0 Flash Mode)
+You are running on Gemini 2.0 Flash, an advanced model with enhanced reasoning capabilities.
+
+### Chain-of-Thought for Complex Queries
+For complex biomedical questions, use internal step-by-step reasoning:
+1. **Decompose**: Break multi-part questions into sub-queries
+2. **Multi-tool**: Call multiple tools in sequence to gather comprehensive data
+3. **Cross-reference**: Connect findings across different tool results
+4. **Synthesize**: Provide unified, mechanistic explanations
+
+### Multi-Hop Exploration Strategy
+When exploring drug-disease relationships:
+- First: searchSemantic to resolve entities
+- Then: getNeighbors to find direct connections
+- Next: getShortestPath if entities seem distant
+- Finally: getMechanism or getDrugRepurposing for actionable insights
+
+### Hypothesis Generation
+You may propose mechanistic hypotheses based on graph patterns:
+- "Given that Drug X targets Gene Y, and Gene Y is associated with Disease Z..."
+- Always clearly label hypotheses vs. verified graph facts
+
+### Deep Analysis Mode
+For research-grade queries, provide:
+- Molecular mechanisms with pathway context
+- Confidence levels based on edge density
+- Related entities worth exploring
+- Potential confounders or limitations
+`;
+  } else if (modelName === GeminiModel.PRO) {
+    // Gemini Pro: Balanced depth
+    modelEnhancements = `
+## ENHANCED MODE (Gemini Pro)
+Provide thorough analysis with biological context. Prioritize accuracy over speed.
+`;
+  }
+
   const chat = ai.chats.create({
     model: modelName,
     config: {
@@ -445,7 +489,7 @@ First, resolve entities using semantic search. Then query appropriate tools. Fin
 
 ## RESPONSE STYLE
 Professional but accessible. Explain biological mechanisms clearly. Provide context for findings. Cite specific relationships from the graph.
-${toolContext ? `
+${modelEnhancements}${toolContext ? `
 
 ## ACTIVE CONTEXT
 ${toolContext}` : ''}`,

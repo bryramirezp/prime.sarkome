@@ -1,6 +1,6 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { Shield, Share2, Dna, BookOpen, MessageSquareText, FlaskConical, ChevronDown, Gamepad2, BrainCircuit } from 'lucide-react';
 import { useApiKey } from '../contexts/ApiKeyContext';
@@ -14,6 +14,23 @@ export default function LabDashboard() {
   const { isValid } = useApiKey();
   const { onShowApiKeyModal } = useOutletContext<LayoutContext>();
   const [showExperimentalMenu, setShowExperimentalMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowExperimentalMenu(false);
+      }
+    };
+
+    if (showExperimentalMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExperimentalMenu]);
 
   return (
     <div className="min-h-full w-full flex flex-col font-sans text-muted-foreground relative bg-background">
@@ -134,7 +151,7 @@ export default function LabDashboard() {
           </Link>
 
           {/* Card 3: Experimental Games Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowExperimentalMenu(!showExperimentalMenu)}
               className={`w-full text-left group flex flex-col p-5 sm:p-8 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 active:scale-[0.98] ${showExperimentalMenu ? 'ring-2 ring-pink-500/20 border-pink-500/50' : ''}`}
@@ -166,12 +183,7 @@ export default function LabDashboard() {
 
             {/* Dropdown Menu */}
             {showExperimentalMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40 bg-transparent" 
-                  onClick={() => setShowExperimentalMenu(false)}
-                />
-                <div className="absolute left-0 right-0 mt-2 p-2 bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in duration-200 origin-top">
+              <div className="mt-4 p-2 bg-card border border-border rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="grid grid-cols-1 gap-1">
                     <Link
                       to="/HypothesisSimulator"
@@ -204,7 +216,6 @@ export default function LabDashboard() {
                     </Link>
                   </div>
                 </div>
-              </>
             )}
           </div>
 

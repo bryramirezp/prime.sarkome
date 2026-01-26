@@ -193,7 +193,7 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                             </div>
                         ), {
                             icon: '🧠',
-                            duration: 60000,
+                            duration: 10000,
                             style: {
                                 background: darkMode ? 'rgba(24, 24, 27, 0.9)' : '#fff',
                                 color: darkMode ? '#fff' : '#333',
@@ -501,6 +501,10 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
             
             const response = await generateResponse(prompt, [], GeminiModel.FLASH_2_0_EXP, apiKey || undefined);
             
+            // Display the result in the inspector panel
+            setAnalysisResults(response.text);
+            setActiveAnalysisType(context === 'general' ? 'nano-brief' : context);
+            
             // CACHE STRATEGY: Update the cache with successful result
             setAnalysisCache(prev => ({
                 ...prev,
@@ -795,11 +799,33 @@ const GraphExplorer: React.FC<GraphExplorerProps> = ({ darkMode }) => {
                                                                     <strong className="text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px]">{activeAnalysisType} Result</strong>
                                                                     <button onClick={() => setAnalysisResults(null)} className="text-tertiary hover:text-primary"><span className="material-symbols-outlined text-[14px]">close</span></button>
                                                                 </div>
-                                                                <div className="prose prose-xs dark:prose-invert max-w-none">
-                                                                    <ReactMarkdown>
-                                                                        {typeof analysisResults === 'string' ? analysisResults : JSON.stringify(analysisResults).slice(0, 200) + '...'}
-                                                                    </ReactMarkdown>
-                                                                </div>
+                                                                 <div className="prose prose-xs dark:prose-invert max-w-none max-h-60 overflow-y-auto custom-scrollbar">
+                                                                     {typeof analysisResults === 'string' ? (
+                                                                         <ReactMarkdown>{analysisResults}</ReactMarkdown>
+                                                                     ) : Array.isArray(analysisResults) ? (
+                                                                         <div className="space-y-2 py-1">
+                                                                             {analysisResults.slice(0, 10).map((r: any, idx: number) => (
+                                                                                 <div key={idx} className="p-2 bg-indigo-500/5 rounded border border-indigo-500/10 text-[10px] break-all">
+                                                                                     {r.drug && <div className="font-bold text-indigo-400 mb-0.5">{r.drug}</div>}
+                                                                                     <div className="opacity-80">
+                                                                                        {JSON.stringify(r).length > 100 
+                                                                                            ? Object.entries(r).map(([k, v]) => `${k}: ${v}`).join(' | ')
+                                                                                            : JSON.stringify(r)}
+                                                                                     </div>
+                                                                                 </div>
+                                                                             ))}
+                                                                             {analysisResults.length > 10 && (
+                                                                                 <div className="text-[9px] text-tertiary text-center pt-1 italic">
+                                                                                     + {analysisResults.length - 10} more results hidden in summary
+                                                                                 </div>
+                                                                             )}
+                                                                         </div>
+                                                                     ) : (
+                                                                         <div className="font-mono text-[10px] break-all whitespace-pre-wrap">
+                                                                            {JSON.stringify(analysisResults, null, 2)}
+                                                                         </div>
+                                                                     )}
+                                                                 </div>
                                                             </div>
                                                         ) : (
                                                             <div className="grid grid-cols-1 gap-2">

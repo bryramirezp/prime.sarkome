@@ -16,9 +16,9 @@ const EnvironmentalRiskCard: React.FC<Props> = ({ data, isLoading }) => {
                     </div>
                     <h3 className="font-bold text-primary">Environmental Risks</h3>
                 </div>
-                 {data?.risks && (
+                 {data && (
                     <div className="text-[10px] bg-surface-hover px-2 py-1 rounded-full text-tertiary font-mono">
-                        {data.risks.length} factors
+                        {data.length} factors
                     </div>
                 )}
             </div>
@@ -29,9 +29,9 @@ const EnvironmentalRiskCard: React.FC<Props> = ({ data, isLoading }) => {
                         <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                         <div className="text-xs text-blue-400 font-mono">Loading exposome data...</div>
                     </div>
-                ) : data?.risks && data.risks.length > 0 ? (
+                ) : data && data.length > 0 ? (
                     <div className="space-y-2">
-                        {data.risks.map((item, i) => (
+                        {data.map((item, i) => (
                             <div key={i} className="bg-surface-hover/30 hover:bg-surface-hover border border-transparent hover:border-blue-500/20 rounded-lg p-3 transition-all">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center justify-between">

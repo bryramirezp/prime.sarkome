@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, useImperativeHandle } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useImperativeHandle, useId } from 'react';
 import * as d3 from 'd3';
 import { GraphData, KGNode, KGEdge } from '../types';
 
@@ -167,6 +167,9 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
     const gRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
 
+    // Generate unique ID for this graph instance (prevents marker ID collisions)
+    const graphId = useId();
+
     // State for UI/UX
     const [dimensions, setDimensions] = useState({ width, height });
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -278,13 +281,13 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
         zoomRef.current = zoom;
         svg.call(zoom);
 
-        // Marker Definitions
+        // Marker Definitions (with unique IDs per graph instance)
         const defs = svg.append('defs');
         const updateMarkers = () => {
              defs.selectAll('marker').remove();
              Object.entries(edgeColors).forEach(([key, color]) => {
                 defs.append('marker')
-                .attr('id', `arrowhead-${key}`)
+                .attr('id', `arrowhead-${key}-${graphId}`)
                 .attr('viewBox', '-0 -5 10 10')
                 .attr('refX', 22)
                 .attr('refY', 0)
@@ -300,12 +303,20 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
         updateMarkers();
 
         // Persistent Simulation
+        const nodeCount = data.nodes?.length || 0;
         const simulation = d3.forceSimulation<SimNode>()
             .force('link', d3.forceLink<SimNode, SimLink>().id(d => d.id).distance(isMobile ? 80 : 120))
             .force('charge', d3.forceManyBody().strength(isMobile ? -200 : -400))
             .force('center', d3.forceCenter(w / 2, h / 2))
             .force('collide', d3.forceCollide().radius(isMobile ? 30 : 40).strength(0.5));
 
+        // Performance: Adaptive decay for large graphs
+        if (nodeCount > 100) {
+            simulation.alphaDecay(0.05).velocityDecay(0.4);
+        }
+        if (nodeCount > 200) {
+            simulation.alphaDecay(0.08).alphaMin(0.01);
+        }
         if (isMobile) {
             simulation.alphaDecay(0.05).velocityDecay(0.4);
         }
@@ -422,7 +433,7 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                         const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
                         return highlightedEdges?.has(key) ? 1 : 0.4;
                     })
-                    .attr('marker-end', d => `url(#arrowhead-${getEdgeColorKey(d.relation)})`),
+                    .attr('marker-end', d => `url(#arrowhead-${getEdgeColorKey(d.relation)}-${graphId})`),
                 update => update
                     .attr('stroke-width', d => {
                         const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
@@ -435,17 +446,17 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                 exit => exit.remove()
             );
 
-        // 5. Update Link Labels
-        const showLabels = !isMobile || links.length < 30;
+        // 5. Update Link Labels (Phase 2: Progressive - only after stabilization)
+        const showLabelsInitially = (!isMobile || links.length < 30) && links.length < 100;
         const linkLabel = g.select('.link-labels-layer')
             .selectAll<SVGTextElement, SimLink>('text')
-            .data(showLabels ? links : [], d => `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}`)
+            .data(showLabelsInitially ? links : [], d => `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}`)
             .join(
                 enter => enter.append('text')
                     .attr('font-size', '7px')
                     .attr('fill', darkMode ? '#94a3b8' : '#64748b')
                     .attr('text-anchor', 'middle')
-                    .attr('opacity', 0.7)
+                    .attr('opacity', 0) // Fade in later
                     .attr('font-weight', d => {
                         const key = `${(d.source as any).id || d.source}-${(d.target as any).id || d.target}-${d.relation}`;
                         return highlightedEdges?.has(key) ? 'bold' : 'normal';
@@ -454,6 +465,11 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                 update => update,
                 exit => exit.remove()
             );
+
+        // Delayed opacity for performance
+        if (showLabelsInitially) {
+            linkLabel.transition().delay(1000).duration(500).attr('opacity', 0.7);
+        }
 
         // 6. Update Nodes
         const node = g.select('.nodes-layer')
@@ -493,12 +509,17 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                         .attr('stroke-width', 2)
                         .style('cursor', 'pointer');
 
+                    // Add title for full text on hover/screen readers
+                    nodeGroup.append('title')
+                        .text(d => `${d.name} (${d.type})`);
+
                     nodeGroup.append('text')
                         .attr('dx', isMobile ? 12 : 16)
                         .attr('dy', 4)
                         .attr('font-size', isMobile ? '8px' : '10px')
                         .attr('font-weight', '600')
-                        .style('pointer-events', 'none');
+                        .style('pointer-events', 'none')
+                        .attr('aria-hidden', 'true'); // Hide from screen readers (title provides this)
 
                     return nodeGroup;
                 },
@@ -509,16 +530,45 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
         // Update node styles based on theme/data
         node.select('circle')
             .attr('fill', d => getNodeColor(d.type))
-            .attr('stroke', 'rgb(var(--color-bg-main))')
-            .style('filter', d => `drop-shadow(0 0 6px ${getNodeColor(d.type)}40)`);
+            .attr('stroke', 'rgb(var(--color-bg-main))');
+            // Performance: Removed drop-shadow filter as it's heavy on reflows during force simulation
+
+        // Helper: Calculate luminance for WCAG contrast
+        const getLuminance = (hex: string): number => {
+            const rgb = parseInt(hex.slice(1), 16);
+            const r = ((rgb >> 16) & 0xff) / 255;
+            const g = ((rgb >> 8) & 0xff) / 255;
+            const b = (rgb & 0xff) / 255;
+            const [rs, gs, bs] = [r, g, b].map(c => 
+                c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+            );
+            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+        };
 
         node.select('text')
-            .attr('fill', darkMode ? '#ffffff' : '#0f172a') // White for dark mode, Slate-900 for light mode
-            .style('text-shadow', darkMode ? '0 1px 2px rgba(0,0,0,0.8)' : '0 1px 2px rgba(255,255,255,0.8)') // Text shadow for legibility
+            .attr('fill', d => {
+                // Use white text for dark nodes, dark text for light nodes (WCAG AA)
+                const bgColor = getNodeColor(d.type);
+                const luminance = getLuminance(bgColor);
+                return luminance > 0.5 ? '#0f172a' : '#ffffff';
+            })
+            .style('text-shadow', d => {
+                const bgColor = getNodeColor(d.type);
+                const luminance = getLuminance(bgColor);
+                // Strong shadow for contrast
+                return luminance > 0.5 
+                    ? '0 1px 3px rgba(255,255,255,0.9), 0 0 2px rgba(255,255,255,0.9)' 
+                    : '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)';
+            })
             .text(d => d.name.length > 25 ? d.name.slice(0, 25) + '...' : d.name);
 
-        // 7. Tick Handler
+        // 7. Tick Handler (Phase 1: Throttled for performance)
+        let tickCount = 0;
         simulation.on('tick', () => {
+            tickCount++;
+            // Throttle: Skip every other tick when the simulation is hot to save CPU
+            if (tickCount % 2 !== 0 && simulation.alpha() > 0.5 && nodes.length > 50) return;
+
             link
                 .attr('x1', d => (d.source as SimNode).x!)
                 .attr('y1', d => (d.source as SimNode).y!)
@@ -530,6 +580,11 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                 .attr('y', d => ((d.source as SimNode).y! + (d.target as SimNode).y!) / 2);
 
             node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Show labels once simulation stabilizes
+        simulation.on('end', () => {
+            linkLabel.transition().duration(500).attr('opacity', 0.7);
         });
 
     }, [data, darkMode, dimensions]);
@@ -637,7 +692,16 @@ const GraphVisualization = React.memo(React.forwardRef<GraphVisualizationHandle,
                 height={dimensions.height}
                 className="w-full h-full block cursor-grab active:cursor-grabbing touch-none"
                 style={{ background: 'transparent', borderRadius: '0' }}
-            />
+                role="img"
+                aria-label={`Knowledge graph visualization with ${data.nodes.length} nodes and ${data.edges.length} connections`}
+            >
+                <title id={`graph-title-${graphId}`}>
+                    Knowledge Graph Network
+                </title>
+                <desc id={`graph-desc-${graphId}`}>
+                    Interactive network diagram showing {data.nodes.length} entities and {data.edges.length} relationships.
+                </desc>
+            </svg>
 
             {/* Embedded Overlays (e.g. Inspector) */}
             {children}

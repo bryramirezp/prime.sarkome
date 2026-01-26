@@ -122,14 +122,13 @@ const EntityMention: React.FC<EntityMentionProps> = ({
                 inline-flex items-center gap-0.5 px-1 py-0.5 rounded
                 font-medium transition-all
                 hover:scale-105 active:scale-95
-                hover:scale-105 active:scale-95
                 text-primary hover:bg-primary/10
                 dark:text-blue-300 dark:bg-blue-400/10 dark:hover:bg-blue-400/20
               `}
-                            title={`Explore ${part} in the knowledge graph`}
+                            aria-label={`Explore ${part} in the knowledge graph`}
                         >
                             {part}
-                            <span className="material-symbols-outlined text-[12px] opacity-70">
+                            <span className="material-symbols-outlined text-[12px] opacity-70" aria-hidden="true">
                                 hub
                             </span>
                         </button>
